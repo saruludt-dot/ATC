@@ -410,8 +410,12 @@ if uploaded_file and calculate:
                 ce_data.append([int(s), ce_high, ce_low])
                 pe_data.append([int(s), pe_high, pe_low])
 
-            ce_df = pd.DataFrame(ce_data, columns=["Strike", "High Price", "Low Price"])
-            pe_df = pd.DataFrame(pe_data, columns=["Strike", "High Price", "Low Price"])
+            # Format to 2 decimal places
+            ce_df["High Price"] = ce_df["High Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            ce_df["Low Price"] = ce_df["Low Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+
+            pe_df["High Price"] = pe_df["High Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            pe_df["Low Price"] = pe_df["Low Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
 
         # ----------- HIGHLIGHT LOGIC -----------
 
