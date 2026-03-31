@@ -83,7 +83,7 @@ with col_right:
 
     uploaded_file = st.file_uploader("📂 Upload CSV file", type=["csv"])
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
         expiry = st.date_input("📅 Expiry Date")
@@ -91,8 +91,8 @@ with col_right:
     with col2:
         strike = st.number_input("💰 Strike Price", step=50)
 
-    with col3:
-        option = st.radio("📊 Option Type", ["CE", "PE"], horizontal=True)
+    #with col3:
+        #option = st.radio("📊 Option Type", ["CE", "PE"], horizontal=True)
 
     colA, colB, colC = st.columns([1,2,1])
     with colB:
