@@ -325,6 +325,44 @@ if uploaded_file and calculate:
         st.dataframe(mapping_df, width='stretch', hide_index=True)
         st.divider()
 
+    # ----------- RIGHT SIDE RESULTS -----------
+
+    if 'atm_strike' in locals():
+
+        # 1️⃣ ATM RESULT
+        if show_atm:
+            diff = round(atm_ce - atm_pe, 2)
+            st.subheader("📍 Minimum Difference Strike (ATM)")
+            st.success(f"Strike: {int(atm_strike)} | CE: {atm_ce:.2f} | PE: {atm_pe:.2f} | Diff: {diff:.2f}")
+
+        st.divider()
+
+        # 2️⃣ BEP
+        if show_bep:
+            ce_bep = get_price("CE", atm_strike - 100)
+            pe_bep = get_price("PE", atm_strike + 100)
+
+            if ce_bep and pe_bep:
+                bep = round((ce_bep + pe_bep) / 2, 2)
+                st.subheader("💰 BEP")
+                st.success(f"{bep:.2f}")
+
+        st.divider()
+
+        # 3️⃣ CHARTS
+        if show_chart_info:
+            st.subheader("📈 Charts to be Used")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
+
+            with col2:
+                st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
+
+        st.divider()
+
     # ----------- VARIATIONS (MAIN SCREEN) -----------
 
     if show_variations and 'atm_strike' in locals():
@@ -408,26 +446,6 @@ if uploaded_file and calculate:
         with col2:
             st.markdown("#### 🔴 PE")
             st.dataframe(pe_styled, width='stretch', hide_index=True)
-
-    # ----------- SIDEBAR INSIGHTS -----------
-
-    if 'atm_strike' in locals():
-
-        with st.sidebar:
-
-            if show_bep:
-                ce_bep = get_price("CE", atm_strike - 100)
-                pe_bep = get_price("PE", atm_strike + 100)
-
-                if ce_bep and pe_bep:
-                    bep = round((ce_bep + pe_bep) / 2, 2)
-                    st.markdown("### 💰 BEP")
-                    st.success(f"{bep:.2f}")
-
-            if show_chart_info:
-                st.markdown("### 📈 Charts to be Used")
-                st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
-                st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
 
     # ----------- VARIATIONS -----------
     
