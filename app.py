@@ -62,7 +62,7 @@ logo_base64 = get_base64_image("logo.png")
 with col_left:
     st.markdown(f"""
     <img src="data:image/png;base64,{logo_base64}" 
-         style="width:100%; height:auto;">
+         style="width:140%; height:auto;">
     """, unsafe_allow_html=True)
 
 # ----------- INPUT PANEL -----------
