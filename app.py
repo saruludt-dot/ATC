@@ -297,16 +297,19 @@ if uploaded_file and calculate:
     mapping_rows = []
     all_strikes = sorted(df[df["Expiry Date"] == expiry_str]["Strike Price"].unique())
 
-    closest_idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - strike))
-    start = max(0, closest_idx - 12)
-    end = min(len(all_strikes), closest_idx + 13)
+    if len(all_strikes) > 0 and strike:
 
-    for s in all_strikes[start:end]:
-        pe_shift = get_price("PE", s + 100)
-        ce_shift = get_price("CE", s - 100)
+        closest_idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - strike))
 
-        if pe_shift is not None and ce_shift is not None:
-            mapping_rows.append([int(s), f"{pe_shift:.2f}", f"{ce_shift:.2f}"])
+        start = max(0, closest_idx - 12)
+        end = min(len(all_strikes), closest_idx + 13)
+
+        for s in all_strikes[start:end]:
+            pe_shift = get_price("PE", s + 100)
+            ce_shift = get_price("CE", s - 100)
+
+            if pe_shift is not None and ce_shift is not None:
+                mapping_rows.append([int(s), f"{pe_shift:.2f}", f"{ce_shift:.2f}"])
 
     mapping_df = pd.DataFrame(
         mapping_rows, columns=["Strike", "Call Price", "Put Price"]
@@ -373,40 +376,42 @@ if uploaded_file and calculate:
             df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
         )
 
+        if len(all_strikes) > 0:
+
         atm_idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
 
-        start = max(0, atm_idx - 10)
-        end = min(len(all_strikes), atm_idx + 11)
+            start = max(0, atm_idx - 10)
+            end = min(len(all_strikes), atm_idx + 11)
 
-        selected_strikes = all_strikes[start:end]
+            selected_strikes = all_strikes[start:end]
 
-        ce_data, pe_data = [], []
+            ce_data, pe_data = [], []
 
-        for s in selected_strikes:
+            for s in selected_strikes:
 
-            ce_row = df[
-                (df["Expiry Date"] == expiry_str) &
-                (df["Option Type"] == "CE") &
-                (df["Strike Price"] == s)
-            ]
+                ce_row = df[
+                    (df["Expiry Date"] == expiry_str) &
+                    (df["Option Type"] == "CE") &
+                    (df["Strike Price"] == s)
+                ]
 
-            pe_row = df[
-                (df["Expiry Date"] == expiry_str) &
-                (df["Option Type"] == "PE") &
-                (df["Strike Price"] == s)
-            ]
+                pe_row = df[
+                    (df["Expiry Date"] == expiry_str) &
+                    (df["Option Type"] == "PE") &
+                    (df["Strike Price"] == s)
+                ]
 
-            ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty else None
-            ce_low = ce_row.iloc[0]["Low Price"] if not ce_row.empty else None
+                ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty else None
+                ce_low = ce_row.iloc[0]["Low Price"] if not ce_row.empty else None
 
-            pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty else None
-            pe_low = pe_row.iloc[0]["Low Price"] if not pe_row.empty else None
+                pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty else None
+                pe_low = pe_row.iloc[0]["Low Price"] if not pe_row.empty else None
 
-            ce_data.append([int(s), ce_high, ce_low])
-            pe_data.append([int(s), pe_high, pe_low])
+                ce_data.append([int(s), ce_high, ce_low])
+                pe_data.append([int(s), pe_high, pe_low])
 
-        ce_df = pd.DataFrame(ce_data, columns=["Strike", "High Price", "Low Price"])
-        pe_df = pd.DataFrame(pe_data, columns=["Strike", "High Price", "Low Price"])
+            ce_df = pd.DataFrame(ce_data, columns=["Strike", "High Price", "Low Price"])
+            pe_df = pd.DataFrame(pe_data, columns=["Strike", "High Price", "Low Price"])
 
         # ----------- HIGHLIGHT LOGIC -----------
 
