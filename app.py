@@ -416,7 +416,7 @@ if uploaded_file and calculate:
             ce_df = pd.DataFrame(ce_data, columns=["Strike", "High Price", "Low Price"])
             pe_df = pd.DataFrame(pe_data, columns=["Strike", "High Price", "Low Price"])
 
-            # ✅ FORMAT HERE (INSIDE BLOCK)
+            # ✅ SAFE formatting (no astype)
             ce_df["High Price"] = ce_df["High Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
             ce_df["Low Price"] = ce_df["Low Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
 
