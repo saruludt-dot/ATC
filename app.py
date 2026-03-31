@@ -154,13 +154,7 @@ if uploaded_file and calculate:
     if diff_list:
         atm_strike, atm_ce, atm_pe, atm_diff = min(diff_list, key=lambda x: x[3])
 
-        #if show_atm:
-            #diff = round(atm_ce - atm_pe, 2)
-            #st.subheader("📍 Minimum Difference Strike (ATM)")
-            #st.success(f"Strike: {int(atm_strike)} | CE: {atm_ce:.2f} | PE: {atm_pe:.2f} | Diff: {diff:.2f}")
-
-        #st.divider()
-
+       
     # ----------- TABLE 1 -----------
 
     rows = []
