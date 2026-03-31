@@ -378,7 +378,7 @@ if uploaded_file and calculate:
 
         if len(all_strikes) > 0:
 
-        atm_idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
+            atm_idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
 
             start = max(0, atm_idx - 10)
             end = min(len(all_strikes), atm_idx + 11)
