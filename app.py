@@ -378,7 +378,10 @@ if uploaded_file and calculate:
 
         if len(all_strikes) > 0:
 
-            atm_idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
+            atm_idx = min(
+                range(len(all_strikes)),
+                key=lambda i: abs(all_strikes[i] - atm_strike)
+            )
 
             start = max(0, atm_idx - 10)
             end = min(len(all_strikes), atm_idx + 11)
@@ -410,12 +413,15 @@ if uploaded_file and calculate:
                 ce_data.append([int(s), ce_high, ce_low])
                 pe_data.append([int(s), pe_high, pe_low])
 
-            # Format to 2 decimal places
-            ce_df["High Price"] = ce_df["High Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
-            ce_df["Low Price"] = ce_df["Low Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            ce_df = pd.DataFrame(ce_data, columns=["Strike", "High Price", "Low Price"])
+            pe_df = pd.DataFrame(pe_data, columns=["Strike", "High Price", "Low Price"])
 
-            pe_df["High Price"] = pe_df["High Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
-            pe_df["Low Price"] = pe_df["Low Price"].astype(float).map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            # ✅ FORMAT HERE (INSIDE BLOCK)
+            ce_df["High Price"] = ce_df["High Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            ce_df["Low Price"] = ce_df["Low Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+
+            pe_df["High Price"] = pe_df["High Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+            pe_df["Low Price"] = pe_df["Low Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
 
         # ----------- HIGHLIGHT LOGIC -----------
 
