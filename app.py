@@ -198,7 +198,7 @@ if uploaded_file and calculate:
 
             # 🔄 SEE-SAW TABLE
             st.subheader("🔄 See-Saw Calculation")
-            st.dataframe(mapping_df, width='stretch', hide_index=True)
+            st.dataframe(styled_mapping, width='stretch', hide_index=True)
 
             # ----------- RIGHT SIDE RESULTS -----------
 
