@@ -173,6 +173,12 @@ if uploaded_file and calculate:
         rows.append(["Low", f"{ce_row.iloc[0]['Low Price']:.2f}",
                      "Low", f"{pe_row.iloc[0]['Low Price']:.2f}"])
 
+    if ce_close and pe_close:
+        rows.append([
+            f"{int(strike)} PE Close", f"{pe_close:.2f}",
+            f"{int(strike)} CE Close", f"{ce_close:.2f}"
+        ])
+
     table_df = pd.DataFrame(rows, columns=["Name", "CE", "Name ", "PE"])
 
     # -------- SEE-SAW --------
