@@ -377,11 +377,11 @@ if uploaded_file and calculate:
                         (df["Strike Price"] == s)
                     ]
 
-                    ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty else None
-                    ce_low = ce_row.iloc[0]["Low Price"] if not ce_row.empty else None
+                    ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty and pd.notnull(ce_row.iloc[0]["High Price"]) else None
+                    ce_low  = ce_row.iloc[0]["Low Price"] if not ce_row.empty and pd.notnull(ce_row.iloc[0]["Low Price"]) else None
 
-                    pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty else None
-                    pe_low = pe_row.iloc[0]["Low Price"] if not pe_row.empty else None
+                    pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty and pd.notnull(pe_row.iloc[0]["High Price"]) else None
+                    pe_low  = pe_row.iloc[0]["Low Price"] if not pe_row.empty and pd.notnull(pe_row.iloc[0]["Low Price"]) else None
 
                     # ---------------- CE LOGIC ----------------
                     ce_bg = ""
@@ -411,8 +411,10 @@ if uploaded_file and calculate:
                     </tr>
                     """
 
-                    prev_ce_high = ce_high
-                    prev_ce_low = ce_low
+                    if ce_high is not None:
+                        prev_ce_high = ce_high
+                    if ce_low is not None:
+                        prev_ce_low = ce_high
 
                     # ---------------- PE LOGIC ----------------
                     pe_bg = ""
@@ -442,8 +444,10 @@ if uploaded_file and calculate:
                     </tr>
                     """
 
-                    prev_pe_high = pe_high
-                    prev_pe_low = pe_low
+                    if ce_low is not None:
+                        prev_ce_low = ce_low
+                    if pe_low is not None:
+                        prev_pe_low = pe_low                
 
                 ce_html += "</table>"
                 pe_html += "</table>"
