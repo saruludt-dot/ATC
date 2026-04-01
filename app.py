@@ -36,11 +36,11 @@ def get_img(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-col_logo, col_tabs = st.columns([2,6])
+col_logo, col_tabs = st.columns([3,5])
 
 with col_logo:
     logo = get_img("logo.png")
-    st.markdown(f"<img src='data:image/png;base64,{logo}' width='100%'>", unsafe_allow_html=True)
+    st.markdown(f"<img src='data:image/png;base64,{logo}' width='250%'>", unsafe_allow_html=True)
 
 # -------- TABS --------
 with col_tabs:
