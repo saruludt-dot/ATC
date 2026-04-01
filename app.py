@@ -27,9 +27,9 @@ def check_login():
 if not check_login():
     st.stop()
 
-if st.button("Logout"):
-    st.session_state.logged_in = False
-    st.rerun()
+#if st.button("Logout"):
+    #st.session_state.logged_in = False
+   # st.rerun()
 
 # -------- LOGO LEFT --------
 def get_img(path):
