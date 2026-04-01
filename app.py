@@ -213,10 +213,13 @@ if uploaded_file and calculate:
         if 'atm_strike' in locals():
             if s == int(atm_strike):
                 color = "#fff3cd"   # Yellow
+                text_color = "black"
             elif s == int(atm_strike + 100):
                 color = "#d4edda"   # Green
+                text_color = "black"
             elif s == int(atm_strike - 100):
                 color = "#f8d7da"   # Red
+                text_color = "black"
 
         html += f"""
     <tr style="background-color:{color}; color:{text_color}; font-weight:bold;">
