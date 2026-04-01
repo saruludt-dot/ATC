@@ -386,12 +386,12 @@ if uploaded_file and calculate:
                             ce_bg = "#ff4d4d"; ce_text = "white"
 
                     ce_html += f"""
-                <tr style="background-color:{ce_bg}; color:{ce_text}; font-weight:bold;">
-                <td>{int(s)}</td>
-                <td>{f"{ce_high:.2f}" if pd.notnull(ce_high) else ""}</td>
-                <td>{f"{ce_low:.2f}" if pd.notnull(ce_low) else ""}</td>
-                </tr>
-                """
+                    <tr style="background-color:{ce_bg}; color:{ce_text}; font-weight:bold;">
+                    <td>{int(s)}</td>
+                    <td>{f"{ce_high:.2f}" if pd.notnull(ce_high) else ""}</td>
+                    <td>{f"{ce_low:.2f}" if pd.notnull(ce_low) else ""}</td>
+                    </tr>
+                    """
 
                     prev_ce_high = ce_high
                     prev_ce_low = ce_low
@@ -417,12 +417,12 @@ if uploaded_file and calculate:
                             pe_bg = "#ff4d4d"; pe_text = "white"
 
                     pe_html += f"""
-                <tr style="background-color:{pe_bg}; color:{pe_text}; font-weight:bold;">
-                <td>{int(s)}</td>
-                <td>{f"{pe_high:.2f}" if pd.notnull(pe_high) else ""}</td>
-                <td>{f"{pe_low:.2f}" if pd.notnull(pe_low) else ""}</td>
-                </tr>
-                """
+                    <tr style="background-color:{pe_bg}; color:{pe_text}; font-weight:bold;">
+                    <td>{int(s)}</td>
+                    <td>{f"{pe_high:.2f}" if pd.notnull(pe_high) else ""}</td>
+                    <td>{f"{pe_low:.2f}" if pd.notnull(pe_low) else ""}</td>
+                    </tr>
+                    """
 
                     prev_pe_high = pe_high
                     prev_pe_low = pe_low
