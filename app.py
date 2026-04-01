@@ -40,7 +40,7 @@ col_logo, col_tabs = st.columns([3,5])
 
 with col_logo:
     logo = get_img("logo.png")
-    st.markdown(f"<img src='data:image/png;base64,{logo}' width='250%'>", unsafe_allow_html=True)
+    st.markdown(f"<img src='data:image/png;base64,{logo}' width='300%'>", unsafe_allow_html=True)
 
 # -------- TABS --------
 with col_tabs:
