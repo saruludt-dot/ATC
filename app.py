@@ -208,6 +208,8 @@ if uploaded_file and calculate:
 
         # 🎨 COLOR LOGIC
         color = ""
+        text_color = "white"
+        
         if 'atm_strike' in locals():
             if s == int(atm_strike):
                 color = "#fff3cd"   # Yellow
@@ -217,7 +219,7 @@ if uploaded_file and calculate:
                 color = "#f8d7da"   # Red
 
         html += f"""
-    <tr style="background-color:{color}; color:black; font-weight:bold;">
+    <tr style="background-color:{color}; color:{text_color}; font-weight:bold;">
         <td>{s}</td>
         <td>{row['Call']:.2f}</td>
         <td>{row['Put']:.2f}</td>
