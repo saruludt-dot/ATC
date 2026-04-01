@@ -106,9 +106,11 @@ st.divider()
 
 if uploaded_file and calculate:
 
-    df = pd.read_csv(uploaded_file)
+    df = pd.read_csv(uploaded_file, skiprows=1, on_bad_lines='skip', engine='python')
 
     df.columns = df.columns.str.strip()
+    df = df.dropna(subset=["Strike Price"])
+    df = df.fillna(0)
     df["Expiry Date"] = df["Expiry Date"].astype(str).str.strip()
     df["Option Type"] = df["Option Type"].astype(str).str.strip().str.upper()
 
