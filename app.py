@@ -332,6 +332,12 @@ if uploaded_file and calculate:
     <tr><th>Strike</th><th>High</th><th>Low</th></tr>
     """
 
+                prev_ce_high = None
+                prev_ce_low = None
+
+                prev_pe_high = None
+                prev_pe_low = None
+                
                 for s in selected_strikes:
 
                     ce_row = df[
@@ -352,35 +358,67 @@ if uploaded_file and calculate:
                     pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty else None
                     pe_low = pe_row.iloc[0]["Low Price"] if not pe_row.empty else None
 
-                    # 🎨 COLOR LOGIC
-                    bg = ""
-                    text_color = "white"
+                    # ---------------- CE LOGIC ----------------
+                    ce_bg = ""
+                    ce_text = "white"
 
                     if s == int(atm_strike):
-                        bg = "#fff3cd"
-                        text_color = "black"
+                        ce_bg = "#fff3cd"; ce_text = "black"
                     elif s == int(atm_strike + 100):
-                        bg = "#d4edda"
-                        text_color = "black"
+                        ce_bg = "#d4edda"; ce_text = "black"
                     elif s == int(atm_strike - 100):
-                        bg = "#f8d7da"
-                        text_color = "black"
+                        ce_bg = "#f8d7da"; ce_text = "black"
+
+                    # CE DESCENDING CHECK
+                    if prev_ce_high is not None and ce_high is not None:
+                        if ce_high > prev_ce_high:
+                            ce_bg = "#ff4d4d"; ce_text = "white"
+
+                    if prev_ce_low is not None and ce_low is not None:
+                        if ce_low > prev_ce_low:
+                            ce_bg = "#ff4d4d"; ce_text = "white"
 
                     ce_html += f"""
-    <tr style="background-color:{bg}; color:{text_color}; font-weight:bold;">
-    <td>{int(s)}</td>
-    <td>{f"{ce_high:.2f}" if ce_high is not None else ""}</td>
-    <td>{f"{ce_low:.2f}" if ce_low is not None else ""}</td>
-    </tr>
-    """
+                <tr style="background-color:{ce_bg}; color:{ce_text}; font-weight:bold;">
+                <td>{int(s)}</td>
+                <td>{f"{ce_high:.2f}" if ce_high is not None else ""}</td>
+                <td>{f"{ce_low:.2f}" if ce_low is not None else ""}</td>
+                </tr>
+                """
+
+                    prev_ce_high = ce_high
+                    prev_ce_low = ce_low
+
+                    # ---------------- PE LOGIC ----------------
+                    pe_bg = ""
+                    pe_text = "white"
+
+                    if s == int(atm_strike):
+                        pe_bg = "#fff3cd"; pe_text = "black"
+                    elif s == int(atm_strike + 100):
+                        pe_bg = "#d4edda"; pe_text = "black"
+                    elif s == int(atm_strike - 100):
+                        pe_bg = "#f8d7da"; pe_text = "black"
+
+                    # PE ASCENDING CHECK
+                    if prev_pe_high is not None and pe_high is not None:
+                        if pe_high < prev_pe_high:
+                            pe_bg = "#ff4d4d"; pe_text = "white"
+
+                    if prev_pe_low is not None and pe_low is not None:
+                        if pe_low < prev_pe_low:
+                            pe_bg = "#ff4d4d"; pe_text = "white"
 
                     pe_html += f"""
-    <tr style="background-color:{bg}; color:{text_color}; font-weight:bold;">
-    <td>{int(s)}</td>
-    <td>{f"{pe_high:.2f}" if pe_high is not None else ""}</td>
-    <td>{f"{pe_low:.2f}" if pe_low is not None else ""}</td>
-    </tr>
-    """
+                <tr style="background-color:{pe_bg}; color:{pe_text}; font-weight:bold;">
+                <td>{int(s)}</td>
+                <td>{f"{pe_high:.2f}" if pe_high is not None else ""}</td>
+                <td>{f"{pe_low:.2f}" if pe_low is not None else ""}</td>
+                </tr>
+                """
+
+                    prev_pe_high = pe_high
+                    prev_pe_low = pe_low
 
                 ce_html += "</table>"
                 pe_html += "</table>"
