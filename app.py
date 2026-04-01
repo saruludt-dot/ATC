@@ -112,10 +112,11 @@ if uploaded_file and calculate:
     if diff_list:
         atm_strike, atm_ce, atm_pe, _ = min(diff_list, key=lambda x: x[3])
 
-    # -------- TABLE 1 --------
+    # ----------- TABLE 1 -----------
 
     rows = []
 
+    # A
     ce = get_price("CE", strike)
     pe = get_price("PE", strike)
 
@@ -123,6 +124,7 @@ if uploaded_file and calculate:
         val = round((ce + pe) / 2, 2)
         rows.append(["A", f"{val:.2f}", "A", f"{val:.2f}"])
 
+    # B
     ce = get_price("CE", strike + 100)
     pe = get_price("PE", strike - 100)
 
@@ -130,6 +132,7 @@ if uploaded_file and calculate:
         val = round((ce + pe) / 2, 2)
         rows.append(["B", f"{val:.2f}", "B", f"{val:.2f}"])
 
+    # C & D
     for step in [150, 200]:
         ce_p = get_price("CE", strike + step)
         pe_p = get_price("PE", strike - step)
@@ -137,6 +140,38 @@ if uploaded_file and calculate:
         if ce_p is not None and pe_p is not None:
             val = round((ce_p + pe_p) / 2, 2)
             rows.append([int(strike-step), f"{val:.2f}", int(strike+step), f"{val:.2f}"])
+
+    # C3 C4 C5
+    ce_close = get_price("CE", strike)
+    pe_close = get_price("PE", strike)
+
+    if ce_close is not None and pe_close is not None:
+        rows.append(["C3", f"{ce_close/4:.2f}", "C3", f"{pe_close/4:.2f}"])
+        rows.append(["C4", f"{ce_close*0.10:.2f}", "C4", f"{pe_close*0.10:.2f}"])
+        rows.append(["C5", f"{ce_close*0.01:.2f}", "C5", f"{pe_close*0.01:.2f}"])
+
+    # E to I
+    for step in [50, 100, 150, 200, 250]:
+        ce_p = get_price("CE", strike - step)
+        pe_p = get_price("PE", strike + step)
+
+        if ce_p is not None and pe_p is not None:
+            val = round((ce_p + pe_p) / 2, 2)
+            rows.append([int(strike+step), f"{val:.2f}", int(strike-step), f"{val:.2f}"])
+
+    # Close High Low
+    ce_row = df[(df["Option Type"]=="CE") & (df["Strike Price"]==strike)]
+    pe_row = df[(df["Option Type"]=="PE") & (df["Strike Price"]==strike)]
+
+    if not ce_row.empty and not pe_row.empty:
+        rows.append(["Close", f"{ce_row.iloc[0]['Close Price']:.2f}",
+                     "Close", f"{pe_row.iloc[0]['Close Price']:.2f}"])
+
+        rows.append(["High", f"{ce_row.iloc[0]['High Price']:.2f}",
+                     "High", f"{pe_row.iloc[0]['High Price']:.2f}"])
+
+        rows.append(["Low", f"{ce_row.iloc[0]['Low Price']:.2f}",
+                     "Low", f"{pe_row.iloc[0]['Low Price']:.2f}"])
 
     table_df = pd.DataFrame(rows, columns=["Name", "CE", "Name ", "PE"])
 
