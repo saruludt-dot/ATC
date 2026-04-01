@@ -414,7 +414,7 @@ if uploaded_file and calculate:
                     if ce_high is not None:
                         prev_ce_high = ce_high
                     if ce_low is not None:
-                        prev_ce_low = ce_high
+                        prev_ce_low = ce_low
 
                     # ---------------- PE LOGIC ----------------
                     pe_bg = ""
