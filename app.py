@@ -236,17 +236,16 @@ if uploaded_file and calculate:
         st.dataframe(table_df)
 
     # ----------- TAB 3 : SEE-SAW + RESULTS -----------
-
     with tab3:
 
         if uploaded_file and calculate:
 
             st.subheader("🔄 See-Saw Calculation")
 
-            # ✅ display styled table
+            # ✅ CORRECT DISPLAY
             st.markdown(html, unsafe_allow_html=True)
 
-            # ----------- RIGHT SIDE RESULTS -----------
+            # ----------- ATM / BEP / CHARTS -----------
 
             if 'atm_strike' in locals():
 
@@ -279,6 +278,7 @@ if uploaded_file and calculate:
 
                 with col2:
                     st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
+    
     
 
     # -------- VARIATIONS --------
