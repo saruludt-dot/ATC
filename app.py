@@ -166,6 +166,25 @@ if uploaded_file and calculate:
             mapping.append([s, pe, ce])
 
     mapping_df = pd.DataFrame(mapping, columns=["Strike","Call","Put"])
+    # Ensure numeric
+    mapping_df["Strike"] = mapping_df["Strike"].astype(float)
+
+    def highlight_strikes(row):
+        s = row["Strike"]
+
+        if 'atm_strike' in locals():
+            if s == atm_strike:
+                return ["background-color: #fff3cd"] * len(row)   # Yellow (ATM)
+            elif s == atm_strike + 100:
+                return ["background-color: #d4edda"] * len(row)   # Green (+100)
+            elif s == atm_strike - 100:
+                return ["background-color: #f8d7da"] * len(row)   # Red (-100)
+
+        return [""] * len(row)
+
+    styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
+
+    st.dataframe(styled_mapping, width='stretch', hide_index=True)
 
     # -------- TAB 2 --------
     with tab2:
