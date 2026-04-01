@@ -227,8 +227,8 @@ if uploaded_file and calculate:
     html += "</table></div>"
 
     # -------- DISPLAY --------
-    st.markdown("### 🔄 See-Saw Calculation", unsafe_allow_html=True)
-    st.markdown(html, unsafe_allow_html=True)
+    #st.markdown("### 🔄 See-Saw Calculation", unsafe_allow_html=True)
+    #st.markdown(html, unsafe_allow_html=True)
     
 
     # -------- TAB 2 --------
@@ -244,7 +244,7 @@ if uploaded_file and calculate:
             st.subheader("🔄 See-Saw Calculation")
 
             # ✅ display styled table
-            st.write(styled_mapping)
+            st.markdown(html, unsafe_allow_html=True)
 
             # ----------- RIGHT SIDE RESULTS -----------
 
