@@ -153,9 +153,16 @@ if uploaded_file and calculate:
     # -------- SEE-SAW (HTML VERSION) --------
 
     mapping = []
-    strikes = sorted(strikes)
+    strikes = sorted([s for s in strikes if pd.notnull(s)])
 
-    idx = min(range(len(strikes)), key=lambda i: abs(strikes[i] - strike))
+    if len(strikes) == 0:
+        st.error("No valid strike data found")
+        st.stop()
+
+    idx = min(
+        range(len(strikes)),
+        key=lambda i: abs(float(strikes[i]) - float(strike))
+    )
 
     start = max(0, idx - 11)
     end = min(len(strikes), idx + 12)
