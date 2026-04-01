@@ -289,25 +289,107 @@ if uploaded_file and calculate:
     # -------- VARIATIONS --------
     with tab4:
 
-        ce_data, pe_data = [], []
+        if uploaded_file and calculate and 'atm_strike' in locals():
 
-        if 'atm_strike' in locals():
+            st.subheader("📊 Variations")
 
-            idx = min(range(len(strikes)), key=lambda i: abs(strikes[i]-atm_strike))
+            all_strikes = sorted(
+                df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
+            )
 
-            for s in strikes[max(0,idx-10):idx+10]:
-                ce = df[(df["Option Type"]=="CE") & (df["Strike Price"]==s)]
-                pe = df[(df["Option Type"]=="PE") & (df["Strike Price"]==s)]
+            if len(all_strikes) > 0:
 
-                ce_data.append([s, ce.iloc[0]["High Price"] if not ce.empty else None,
-                                  ce.iloc[0]["Low Price"] if not ce.empty else None])
+                idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
 
-                pe_data.append([s, pe.iloc[0]["High Price"] if not pe.empty else None,
-                                  pe.iloc[0]["Low Price"] if not pe.empty else None])
+                selected_strikes = all_strikes[max(0, idx-10): idx+11]
 
-            ce_df = pd.DataFrame(ce_data, columns=["Strike","High","Low"])
-            pe_df = pd.DataFrame(pe_data, columns=["Strike","High","Low"])
+                ce_html = """
+    <style>
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .custom-table th {
+        background-color: #111827;
+        color: white;
+        padding: 8px;
+    }
+    .custom-table td {
+        padding: 6px;
+        text-align: center;
+        border-bottom: 1px solid #333;
+    }
+    </style>
 
-            col1,col2 = st.columns(2)
-            col1.dataframe(ce_df)
-            col2.dataframe(pe_df)
+    <h4 style="color:white;">🟢 CE</h4>
+    <table class="custom-table">
+    <tr><th>Strike</th><th>High</th><th>Low</th></tr>
+    """
+
+                pe_html = """
+    <h4 style="color:white;">🔴 PE</h4>
+    <table class="custom-table">
+    <tr><th>Strike</th><th>High</th><th>Low</th></tr>
+    """
+
+                for s in selected_strikes:
+
+                    ce_row = df[
+                        (df["Expiry Date"] == expiry_str) &
+                        (df["Option Type"] == "CE") &
+                        (df["Strike Price"] == s)
+                    ]
+
+                    pe_row = df[
+                        (df["Expiry Date"] == expiry_str) &
+                        (df["Option Type"] == "PE") &
+                        (df["Strike Price"] == s)
+                    ]
+
+                    ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty else None
+                    ce_low = ce_row.iloc[0]["Low Price"] if not ce_row.empty else None
+
+                    pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty else None
+                    pe_low = pe_row.iloc[0]["Low Price"] if not pe_row.empty else None
+
+                    # 🎨 COLOR LOGIC
+                    bg = ""
+                    text_color = "white"
+
+                    if s == int(atm_strike):
+                        bg = "#fff3cd"
+                        text_color = "black"
+                    elif s == int(atm_strike + 100):
+                        bg = "#d4edda"
+                        text_color = "black"
+                    elif s == int(atm_strike - 100):
+                        bg = "#f8d7da"
+                        text_color = "black"
+
+                    ce_html += f"""
+    <tr style="background-color:{bg}; color:{text_color}; font-weight:bold;">
+    <td>{int(s)}</td>
+    <td>{ce_high:.2f if ce_high else ''}</td>
+    <td>{ce_low:.2f if ce_low else ''}</td>
+    </tr>
+    """
+
+                    pe_html += f"""
+    <tr style="background-color:{bg}; color:{text_color}; font-weight:bold;">
+    <td>{int(s)}</td>
+    <td>{pe_high:.2f if pe_high else ''}</td>
+    <td>{pe_low:.2f if pe_low else ''}</td>
+    </tr>
+    """
+
+                ce_html += "</table>"
+                pe_html += "</table>"
+
+                # DISPLAY SIDE BY SIDE
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    components.html(ce_html, height=500, scrolling=True)
+
+                with col2:
+                    components.html(pe_html, height=500, scrolling=True)
