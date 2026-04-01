@@ -334,10 +334,28 @@ if uploaded_file and calculate:
     """
 
                 pe_html = """
+     <style>
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .custom-table th {
+        background-color: #111827;
+        color: white;
+        padding: 8px;
+    }
+    .custom-table td {
+        padding: 6px;
+        text-align: center;
+        border-bottom: 1px solid #333;
+    }
+    </style>
+
     <h4 style="color:white;">🔴 PE</h4>
     <table class="custom-table">
     <tr><th>Strike</th><th>High</th><th>Low</th></tr>
     """
+
 
                 prev_ce_high = None
                 prev_ce_low = None
