@@ -42,9 +42,9 @@ st.sidebar.subheader("📊 Display Options")
 
 show_table1 = st.sidebar.checkbox("Average Calculation", True)
 show_table2 = st.sidebar.checkbox("See-Saw Calculation", True)
-show_atm = st.sidebar.checkbox("Minimum Difference Strike", True)
-show_bep = st.sidebar.checkbox("BEP", True)
-show_chart_info = st.sidebar.checkbox("Charts to be Used", True)
+#show_atm = st.sidebar.checkbox("Minimum Difference Strike", True)
+#show_bep = st.sidebar.checkbox("BEP", True)
+#show_chart_info = st.sidebar.checkbox("Charts to be Used", True)
 show_variations = st.sidebar.checkbox("Variations", True)
 
 # ----------- LAYOUT -----------
@@ -327,7 +327,7 @@ if uploaded_file and calculate:
     if 'atm_strike' in locals():
 
         # 1️⃣ ATM RESULT
-        if show_atm:
+        if show_table2:
             diff = round(atm_ce - atm_pe, 2)
             st.subheader("📍 Minimum Difference Strike (ATM)")
             st.success(f"Strike: {int(atm_strike)} | CE: {atm_ce:.2f} | PE: {atm_pe:.2f} | Diff: {diff:.2f}")
@@ -335,7 +335,7 @@ if uploaded_file and calculate:
         st.divider()
 
         # 2️⃣ BEP
-        if show_bep:
+        if show_table2:
             ce_bep = get_price("CE", atm_strike - 100)
             pe_bep = get_price("PE", atm_strike + 100)
 
@@ -347,7 +347,7 @@ if uploaded_file and calculate:
         st.divider()
 
         # 3️⃣ CHARTS
-        if show_chart_info:
+        if show_table2:
             st.subheader("📈 Charts to be Used")
 
             col1, col2 = st.columns(2)
