@@ -167,25 +167,52 @@ if uploaded_file and calculate:
     with tab2:
         st.dataframe(table_df)
 
-    # -------- TAB 3 --------
+    # ----------- TAB 3 : SEE-SAW + RESULTS -----------
+
     with tab3:
-        st.dataframe(mapping_df)
 
-        if 'atm_strike' in locals():
-            st.subheader("ATM")
-            st.success(atm_strike)
+        if uploaded_file and calculate:
 
-            ce_bep = get_price("CE", atm_strike-100)
-            pe_bep = get_price("PE", atm_strike+100)
+            # 🔄 SEE-SAW TABLE
+            st.subheader("🔄 See-Saw Calculation")
+            st.dataframe(mapping_df, width='stretch', hide_index=True)
 
-            if ce_bep and pe_bep:
-                st.subheader("BEP")
-                st.success(round((ce_bep+pe_bep)/2,2))
+            # ----------- RIGHT SIDE RESULTS -----------
 
-            st.subheader("Charts")
-            c1,c2 = st.columns(2)
-            c1.success(f"CE {atm_strike-100}")
-            c2.error(f"PE {atm_strike+100}")
+            if 'atm_strike' in locals():
+
+                # 1️⃣ ATM RESULT
+                diff = round(atm_ce - atm_pe, 2)
+
+                st.subheader("📍 Minimum Difference Strike (ATM)")
+                st.success(
+                    f"Strike: {int(atm_strike)} | CE: {atm_ce:.2f} | PE: {atm_pe:.2f} | Diff: {diff:.2f}"
+                )
+
+                st.divider()
+
+                # 2️⃣ BEP
+                ce_bep = get_price("CE", atm_strike - 100)
+                pe_bep = get_price("PE", atm_strike + 100)
+
+                if ce_bep is not None and pe_bep is not None:
+                    bep = round((ce_bep + pe_bep) / 2, 2)
+
+                    st.subheader("💰 BEP")
+                    st.success(f"{bep:.2f}")
+
+                st.divider()
+
+                # 3️⃣ CHARTS
+                st.subheader("📈 Charts to be Used")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
+
+                with col2:
+                    st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
 
     # -------- VARIATIONS --------
     with tab4:
