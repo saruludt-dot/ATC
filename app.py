@@ -36,7 +36,7 @@ def get_img(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-col_logo, col_tabs, col_logout = st.columns([3,5,1])
+col_logo, col_tabs, col_logout = st.columns([3,5,2])
 
 with col_logout:
     if st.button("Logout"):
