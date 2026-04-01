@@ -82,7 +82,7 @@ if uploaded_file and calculate:
     for s in strikes:
         ce = get_price("CE", s)
         pe = get_price("PE", s)
-        if ce is not None and pe is not None:
+        if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
             diff_list.append((s, ce, pe, abs(ce-pe)))
 
     if diff_list:
@@ -94,14 +94,14 @@ if uploaded_file and calculate:
     # A
     ce = get_price("CE", strike)
     pe = get_price("PE", strike)
-    if ce is not None and pe is not None:
+    if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
         val = (ce+pe)/2
         rows.append(["A", f"{val:.2f}", "A", f"{val:.2f}"])
 
     # B
     ce = get_price("CE", strike+100)
     pe = get_price("PE", strike-100)
-    if ce is not None and pe is not None:
+    if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
         val = (ce+pe)/2
         rows.append(["B", f"{val:.2f}", "B", f"{val:.2f}"])
 
@@ -109,7 +109,7 @@ if uploaded_file and calculate:
     for step in [150,200]:
         ce = get_price("CE", strike+step)
         pe = get_price("PE", strike-step)
-        if ce and pe:
+        if ce is not None and pe is not None:
             val = (ce+pe)/2
             rows.append([strike-step, f"{val:.2f}", strike+step, f"{val:.2f}"])
 
@@ -126,7 +126,7 @@ if uploaded_file and calculate:
     for step in [50,100,150,200,250]:
         ce = get_price("CE", strike-step)
         pe = get_price("PE", strike+step)
-        if ce and pe:
+        if ce is not None and pe is not None:
             val = (ce+pe)/2
             rows.append([strike+step, f"{val:.2f}", strike-step, f"{val:.2f}"])
 
@@ -158,7 +158,7 @@ if uploaded_file and calculate:
     for s in strikes[max(0,idx-5):idx+5]:
         pe = get_price("PE", s+100)
         ce = get_price("CE", s-100)
-        if pe and ce:
+        if pe is not None and ce is not None:
             mapping.append([s, pe, ce])
 
     mapping_df = pd.DataFrame(mapping, columns=["Strike","Call","Put"])
@@ -195,7 +195,7 @@ if uploaded_file and calculate:
                 ce_bep = get_price("CE", atm_strike - 100)
                 pe_bep = get_price("PE", atm_strike + 100)
 
-                if ce_bep is not None and pe_bep is not None:
+                if ce_bep is not None and pe_bep is not None and ce_bep > 0 and pe_bep > 0:
                     bep = round((ce_bep + pe_bep) / 2, 2)
 
                     st.subheader("💰 BEP")
