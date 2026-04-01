@@ -163,7 +163,7 @@ if uploaded_file and calculate:
     ce = get_price("CE", strike)
     pe = get_price("PE", strike)
 
-    if ce is not None and pe is not None::
+    if ce is not None and pe is not None:
         val = round((ce + pe) / 2, 2)
         rows.append(["A", f"{val:.2f}", "A", f"{val:.2f}"])
 
@@ -171,7 +171,7 @@ if uploaded_file and calculate:
     ce = get_price("CE", strike + 100)
     pe = get_price("PE", strike - 100)
 
-    if ce is not None and pe is not None::
+    if ce is not None and pe is not None:
         val = round((ce + pe) / 2, 2)
         rows.append(["B", f"{val:.2f}", "B", f"{val:.2f}"])
 
