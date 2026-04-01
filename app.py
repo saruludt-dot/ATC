@@ -170,8 +170,7 @@ if uploaded_file and calculate:
 
     # -------- BUILD HTML TABLE --------
 
-    html = """
-    <style>
+    html = """<style>
     .table-container {
         width: 100%;
         overflow-x: auto;
@@ -217,12 +216,12 @@ if uploaded_file and calculate:
                 color = "#f8d7da"   # Red
 
         html += f"""
-        <tr style="background-color:{color}">
-            <td>{s}</td>
-            <td>{row['Call']:.2f}</td>
-            <td>{row['Put']:.2f}</td>
-        </tr>
-        """
+    <tr style="background-color:{color}">
+        <td>{s}</td>
+        <td>{row['Call']:.2f}</td>
+        <td>{row['Put']:.2f}</td>
+    </tr>
+    """
 
     html += "</table></div>"
 
