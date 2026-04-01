@@ -217,7 +217,7 @@ if uploaded_file and calculate:
                 color = "#f8d7da"   # Red
 
         html += f"""
-    <tr style="background-color:{color}">
+    <tr style="background-color:{color}; color:black; font-weight:bold;">
         <td>{s}</td>
         <td>{row['Call']:.2f}</td>
         <td>{row['Put']:.2f}</td>
