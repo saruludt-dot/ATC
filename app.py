@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
+import streamlit.components.v1 as components
 
 # -------- LOGIN --------
 def check_login():
@@ -242,7 +243,7 @@ if uploaded_file and calculate:
             st.subheader("🔄 See-Saw Calculation")
 
             # ✅ CORRECT DISPLAY
-            st.markdown(html, unsafe_allow_html=True)
+            components.html(html, height=600, scrolling=True)
 
             # ----------- ATM / BEP / CHARTS -----------
 
