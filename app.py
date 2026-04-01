@@ -230,34 +230,146 @@ if uploaded_file and calculate:
         st.subheader("📊 Average")
         st.dataframe(table_df)
 
-    # -------- TAB 3 --------
+    # ----------- SEE-SAW TAB -----------
 
-    with tab3:
-        st.subheader("🔄 See-Saw")
-        st.dataframe(mapping_df)
+with tab3:
+
+    if uploaded_file and calculate:
+
+        # 🔄 SEE-SAW TABLE
+        if show_table2:
+            st.subheader("🔄 See-Saw Calculation")
+            st.dataframe(mapping_df, width='stretch', hide_index=True)
+
+        # ----------- RIGHT SIDE RESULTS -----------
 
         if 'atm_strike' in locals():
-            st.subheader("📍 ATM")
-            st.success(atm_strike)
 
-            ce_bep = get_price("CE", atm_strike-100)
-            pe_bep = get_price("PE", atm_strike+100)
+            st.divider()
 
-            if ce_bep and pe_bep:
+            # 1️⃣ ATM
+            diff = round(atm_ce - atm_pe, 2)
+            st.subheader("📍 Minimum Difference Strike (ATM)")
+            st.success(
+                f"Strike: {int(atm_strike)} | CE: {atm_ce:.2f} | PE: {atm_pe:.2f} | Diff: {diff:.2f}"
+            )
+
+            st.divider()
+
+            # 2️⃣ BEP
+            ce_bep = get_price("CE", atm_strike - 100)
+            pe_bep = get_price("PE", atm_strike + 100)
+
+            if ce_bep is not None and pe_bep is not None:
+                bep = round((ce_bep + pe_bep) / 2, 2)
                 st.subheader("💰 BEP")
-                st.success(round((ce_bep+pe_bep)/2,2))
+                st.success(f"{bep:.2f}")
 
-    # -------- TAB 4 --------
+            st.divider()
+
+            # 3️⃣ CHARTS
+            st.subheader("📈 Charts to be Used")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
+
+            with col2:
+                st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
+
+    # ----------- VARIATIONS TAB -----------
 
     with tab4:
-        st.subheader("📊 Variations")
 
-        col1, col2 = st.columns(2)
+        if uploaded_file and calculate and show_variations and 'atm_strike' in locals():
 
-        with col1:
-            st.write("CE")
-            st.dataframe(ce_df)
+            st.markdown("### 📊 Variations")
 
-        with col2:
-            st.write("PE")
-            st.dataframe(pe_df)
+            all_strikes = sorted(
+                df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
+            )
+
+            if len(all_strikes) > 0:
+
+                atm_idx = min(
+                    range(len(all_strikes)),
+                    key=lambda i: abs(all_strikes[i] - atm_strike)
+                )
+
+                start = max(0, atm_idx - 10)
+                end = min(len(all_strikes), atm_idx + 11)
+
+                selected_strikes = all_strikes[start:end]
+
+                ce_data, pe_data = [], []
+
+                for s in selected_strikes:
+
+                    ce_row = df[
+                        (df["Expiry Date"] == expiry_str) &
+                        (df["Option Type"] == "CE") &
+                        (df["Strike Price"] == s)
+                    ]
+
+                    pe_row = df[
+                        (df["Expiry Date"] == expiry_str) &
+                        (df["Option Type"] == "PE") &
+                        (df["Strike Price"] == s)
+                    ]
+
+                    ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty else None
+                    ce_low = ce_row.iloc[0]["Low Price"] if not ce_row.empty else None
+
+                    pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty else None
+                    pe_low = pe_row.iloc[0]["Low Price"] if not pe_row.empty else None
+
+                    ce_data.append([int(s), ce_high, ce_low])
+                    pe_data.append([int(s), pe_high, pe_low])
+
+                ce_df = pd.DataFrame(ce_data, columns=["Strike", "High Price", "Low Price"])
+                pe_df = pd.DataFrame(pe_data, columns=["Strike", "High Price", "Low Price"])
+
+                # ✅ FORMAT
+                ce_df["High Price"] = ce_df["High Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+                ce_df["Low Price"] = ce_df["Low Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+
+                pe_df["High Price"] = pe_df["High Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+                pe_df["Low Price"] = pe_df["Low Price"].map(lambda x: f"{x:.2f}" if pd.notnull(x) else "")
+
+            # ----------- HIGHLIGHT -----------
+
+            def highlight_ce(col):
+                styles, prev = [], None
+                for val in col:
+                    if prev is not None and val not in ["", None] and float(val) > float(prev):
+                        styles.append("background-color:red")
+                    else:
+                        styles.append("")
+                    prev = val if val not in ["", None] else prev
+                return styles
+
+            def highlight_pe(col):
+                styles, prev = [], None
+                for val in col:
+                    if prev is not None and val not in ["", None] and float(val) < float(prev):
+                        styles.append("background-color:red")
+                    else:
+                        styles.append("")
+                    prev = val if val not in ["", None] else prev
+                return styles
+
+            ce_styled = ce_df.style.apply(highlight_ce, subset=["High Price", "Low Price"])
+            pe_styled = pe_df.style.apply(highlight_pe, subset=["High Price", "Low Price"])
+
+            # ----------- DISPLAY -----------
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown("#### 🟢 CE")
+                st.dataframe(ce_styled, width='stretch', hide_index=True)
+
+            with col2:
+                st.markdown("#### 🔴 PE")
+                st.dataframe(pe_styled, width='stretch', hide_index=True)
