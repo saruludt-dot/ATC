@@ -184,7 +184,7 @@ if uploaded_file and calculate:
 
     styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
 
-    st.dataframe(styled_mapping, width='stretch', hide_index=True)
+    #st.dataframe(styled_mapping, width='stretch', hide_index=True)
 
     # -------- TAB 2 --------
     with tab2:
