@@ -369,16 +369,16 @@ if uploaded_file and calculate:
                     ce_html += f"""
     <tr style="background-color:{bg}; color:{text_color}; font-weight:bold;">
     <td>{int(s)}</td>
-    <td>{ce_high:.2f if ce_high else ''}</td>
-    <td>{ce_low:.2f if ce_low else ''}</td>
+    <td>{f"{ce_high:.2f}" if ce_high is not None else ""}</td>
+    <td>{f"{ce_low:.2f}" if ce_low is not None else ""}</td>
     </tr>
     """
 
                     pe_html += f"""
     <tr style="background-color:{bg}; color:{text_color}; font-weight:bold;">
     <td>{int(s)}</td>
-    <td>{pe_high:.2f if pe_high else ''}</td>
-    <td>{pe_low:.2f if pe_low else ''}</td>
+    <td>{f"{pe_high:.2f}" if pe_high is not None else ""}</td>
+    <td>{f"{pe_low:.2f}" if pe_low is not None else ""}</td>
     </tr>
     """
 
