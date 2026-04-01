@@ -163,7 +163,7 @@ if uploaded_file and calculate:
     ce = get_price("CE", strike)
     pe = get_price("PE", strike)
 
-    if ce and pe:
+    if ce is not None and pe is not None::
         val = round((ce + pe) / 2, 2)
         rows.append(["A", f"{val:.2f}", "A", f"{val:.2f}"])
 
@@ -171,7 +171,7 @@ if uploaded_file and calculate:
     ce = get_price("CE", strike + 100)
     pe = get_price("PE", strike - 100)
 
-    if ce and pe:
+    if ce is not None and pe is not None::
         val = round((ce + pe) / 2, 2)
         rows.append(["B", f"{val:.2f}", "B", f"{val:.2f}"])
 
@@ -324,41 +324,36 @@ if uploaded_file and calculate:
 
     # ----------- RIGHT SIDE RESULTS -----------
 
-    if 'atm_strike' in locals():
+    if 'atm_strike' in locals() and show_table2:
 
-        # 1️⃣ ATM RESULT
-        if show_table2:
-            diff = round(atm_ce - atm_pe, 2)
-            st.subheader("📍 Minimum Difference Strike (ATM)")
-            st.success(f"Strike: {int(atm_strike)} | CE: {atm_ce:.2f} | PE: {atm_pe:.2f} | Diff: {diff:.2f}")
+        # 1️⃣ ATM
+        diff = round(atm_ce - atm_pe, 2)
+        st.subheader("📍 Minimum Difference Strike (ATM)")
+        st.success(f"Strike: {int(atm_strike)} | CE: {atm_ce:.2f} | PE: {atm_pe:.2f} | Diff: {diff:.2f}")
 
         st.divider()
 
         # 2️⃣ BEP
-        if show_table2:
-            ce_bep = get_price("CE", atm_strike - 100)
-            pe_bep = get_price("PE", atm_strike + 100)
+        ce_bep = get_price("CE", atm_strike - 100)
+        pe_bep = get_price("PE", atm_strike + 100)
 
-            if ce_bep and pe_bep:
-                bep = round((ce_bep + pe_bep) / 2, 2)
-                st.subheader("💰 BEP")
-                st.success(f"{bep:.2f}")
+        if ce_bep is not None and pe_bep is not None:
+            bep = round((ce_bep + pe_bep) / 2, 2)
+            st.subheader("💰 BEP")
+            st.success(f"{bep:.2f}")
 
         st.divider()
 
         # 3️⃣ CHARTS
-        if show_table2:
-            st.subheader("📈 Charts to be Used")
+        st.subheader("📈 Charts to be Used")
 
-            col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
-            with col1:
-                st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
+        with col1:
+            st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
 
-            with col2:
-                st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
-
-        st.divider()
+        with col2:
+            st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
 
     # ----------- VARIATIONS (MAIN SCREEN) -----------
 
