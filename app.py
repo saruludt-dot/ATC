@@ -308,7 +308,7 @@ if uploaded_file and calculate:
 
                 idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
 
-                selected_strikes = all_strikes[max(0, idx-10): idx+11]
+                selected_strikes = all_strikes[max(0, idx-20): idx+21]
 
                 ce_html = """
     <style>
@@ -369,12 +369,12 @@ if uploaded_file and calculate:
                     ce_bg = ""
                     ce_text = "white"
 
-                    if s == int(atm_strike):
-                        ce_bg = "#fff3cd"; ce_text = "black"
-                    elif s == int(atm_strike + 100):
-                        ce_bg = "#d4edda"; ce_text = "black"
-                    elif s == int(atm_strike - 100):
-                        ce_bg = "#f8d7da"; ce_text = "black"
+                    #if s == int(atm_strike):
+                        #ce_bg = "#fff3cd"; ce_text = "black"
+                    #elif s == int(atm_strike + 100):
+                        #ce_bg = "#d4edda"; ce_text = "black"
+                    #elif s == int(atm_strike - 100):
+                        #ce_bg = "#f8d7da"; ce_text = "black"
 
                     # CE DESCENDING CHECK
                     if prev_ce_high is not None and ce_high is not None:
@@ -400,12 +400,12 @@ if uploaded_file and calculate:
                     pe_bg = ""
                     pe_text = "white"
 
-                    if s == int(atm_strike):
-                        pe_bg = "#fff3cd"; pe_text = "black"
-                    elif s == int(atm_strike + 100):
-                        pe_bg = "#d4edda"; pe_text = "black"
-                    elif s == int(atm_strike - 100):
-                        pe_bg = "#f8d7da"; pe_text = "black"
+                    #if s == int(atm_strike):
+                        #pe_bg = "#fff3cd"; pe_text = "black"
+                    #elif s == int(atm_strike + 100):
+                        #pe_bg = "#d4edda"; pe_text = "black"
+                    #elif s == int(atm_strike - 100):
+                        #pe_bg = "#f8d7da"; pe_text = "black"
 
                     # PE ASCENDING CHECK
                     if prev_pe_high is not None and pe_high is not None:
