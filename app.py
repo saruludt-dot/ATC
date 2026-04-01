@@ -170,18 +170,20 @@ if uploaded_file and calculate:
     mapping_df["Strike"] = mapping_df["Strike"].astype(float)
 
     def highlight_strikes(row):
-        s = row["Strike"]
+        try:
+            s = int(float(row["Strike"]))   # ✅ force numeric
+        except:
+            return [""] * len(row)
 
         if 'atm_strike' in locals():
-            if s == atm_strike:
-                return ["background-color: #fff3cd"] * len(row)   # Yellow (ATM)
-            elif s == atm_strike + 100:
-                return ["background-color: #d4edda"] * len(row)   # Green (+100)
-            elif s == atm_strike - 100:
-                return ["background-color: #f8d7da"] * len(row)   # Red (-100)
+            if s == int(atm_strike):
+                return ["background-color: #fff3cd"] * len(row)   # Yellow
+            elif s == int(atm_strike + 100):
+                return ["background-color: #d4edda"] * len(row)   # Green
+            elif s == int(atm_strike - 100):
+                return ["background-color: #f8d7da"] * len(row)   # Red
 
         return [""] * len(row)
-
     styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
 
     #st.dataframe(styled_mapping, width='stretch', hide_index=True)
@@ -201,10 +203,13 @@ if uploaded_file and calculate:
 
             mapping_df = pd.DataFrame(mapping, columns=["Strike","Call","Put"])
 
-            # format
-            mapping_df["Strike"] = mapping_df["Strike"].map(lambda x: f"{int(x)}")
             mapping_df["Call"] = mapping_df["Call"].map(lambda x: f"{x:.2f}")
             mapping_df["Put"] = mapping_df["Put"].map(lambda x: f"{x:.2f}")
+
+            # format
+            #mapping_df["Strike"] = mapping_df["Strike"].map(lambda x: f"{int(x)}")
+            #mapping_df["Call"] = mapping_df["Call"].map(lambda x: f"{x:.2f}")
+            #mapping_df["Put"] = mapping_df["Put"].map(lambda x: f"{x:.2f}")
 
             # style
             styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
