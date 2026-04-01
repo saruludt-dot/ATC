@@ -155,9 +155,13 @@ if uploaded_file and calculate:
 
     idx = min(range(len(strikes)), key=lambda i: abs(strikes[i]-strike))
 
-    for s in strikes[max(0,idx-5):idx+5]:
-        pe = get_price("PE", s+100)
-        ce = get_price("CE", s-100)
+    start = max(0, idx - 11)
+    end = min(len(strikes), idx + 12)
+
+    for s in strikes[start:end]:
+        pe = get_price("PE", s + 100)
+        ce = get_price("CE", s - 100)
+
         if pe is not None and ce is not None:
             mapping.append([s, pe, ce])
 
