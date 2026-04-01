@@ -198,8 +198,20 @@ if uploaded_file and calculate:
 
             # 🔄 SEE-SAW TABLE
             st.subheader("🔄 See-Saw Calculation")
-            st.dataframe(styled_mapping, width='stretch', hide_index=True)
 
+            mapping_df = pd.DataFrame(mapping, columns=["Strike","Call","Put"])
+
+            # format
+            mapping_df["Strike"] = mapping_df["Strike"].map(lambda x: f"{int(x)}")
+            mapping_df["Call"] = mapping_df["Call"].map(lambda x: f"{x:.2f}")
+            mapping_df["Put"] = mapping_df["Put"].map(lambda x: f"{x:.2f}")
+
+            # style
+            styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
+
+            # display
+            st.write(styled_mapping)
+            
             # ----------- RIGHT SIDE RESULTS -----------
 
             if 'atm_strike' in locals():
