@@ -149,7 +149,7 @@ if uploaded_file and calculate:
 
     table_df = pd.DataFrame(rows, columns=["Name","CE","Name ","PE"])
 
-    # -------- SEE-SAW --------
+    # -------- SEE-SAW (HTML VERSION) --------
 
     mapping = []
     strikes = sorted(strikes)
@@ -164,30 +164,72 @@ if uploaded_file and calculate:
         ce = get_price("CE", s - 100)
 
         if pe is not None and ce is not None:
-            mapping.append([int(s), pe, ce])   # ✅ keep strike as int
+            mapping.append([int(s), ce, pe])
 
-    # Create DataFrame
     mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
 
-    # -------- FORMAT VALUES --------
-    mapping_df["Call"] = mapping_df["Call"].map(lambda x: f"{x:.2f}")
-    mapping_df["Put"] = mapping_df["Put"].map(lambda x: f"{x:.2f}")
+    # -------- BUILD HTML TABLE --------
 
-    # -------- HIGHLIGHT FUNCTION --------
-    def highlight_strikes(row):
+    html = """
+    <style>
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .custom-table th {
+        background-color: #111827;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+    .custom-table td {
+        padding: 8px;
+        text-align: center;
+        border-bottom: 1px solid #333;
+    }
+    </style>
+
+    <div class="table-container">
+    <table class="custom-table">
+    <tr>
+    <th>Strike</th>
+    <th>Call</th>
+    <th>Put</th>
+    </tr>
+    """
+
+    for _, row in mapping_df.iterrows():
         s = int(row["Strike"])
 
+        # 🎨 COLOR LOGIC
+        color = ""
         if 'atm_strike' in locals():
             if s == int(atm_strike):
-                return ["background-color: #fff3cd"] * len(row)   # 🟡 ATM
+                color = "#fff3cd"   # Yellow
             elif s == int(atm_strike + 100):
-                return ["background-color: #d4edda"] * len(row)   # 🟢 +100
+                color = "#d4edda"   # Green
             elif s == int(atm_strike - 100):
-                return ["background-color: #f8d7da"] * len(row)   # 🔴 -100
+                color = "#f8d7da"   # Red
 
-        return [""] * len(row)
+        html += f"""
+        <tr style="background-color:{color}">
+            <td>{s}</td>
+            <td>{row['Call']:.2f}</td>
+            <td>{row['Put']:.2f}</td>
+        </tr>
+        """
 
-    styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
+    html += "</table></div>"
+
+    # -------- DISPLAY --------
+    st.markdown("### 🔄 See-Saw Calculation", unsafe_allow_html=True)
+    st.markdown(html, unsafe_allow_html=True)
+    
 
     # -------- TAB 2 --------
     with tab2:
