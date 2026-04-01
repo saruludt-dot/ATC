@@ -150,10 +150,11 @@ if uploaded_file and calculate:
     table_df = pd.DataFrame(rows, columns=["Name","CE","Name ","PE"])
 
     # -------- SEE-SAW --------
+
     mapping = []
     strikes = sorted(strikes)
 
-    idx = min(range(len(strikes)), key=lambda i: abs(strikes[i]-strike))
+    idx = min(range(len(strikes)), key=lambda i: abs(strikes[i] - strike))
 
     start = max(0, idx - 11)
     end = min(len(strikes), idx + 12)
@@ -163,30 +164,30 @@ if uploaded_file and calculate:
         ce = get_price("CE", s - 100)
 
         if pe is not None and ce is not None:
-            mapping.append([s, pe, ce])
+            mapping.append([int(s), pe, ce])   # ✅ keep strike as int
 
-    mapping_df = pd.DataFrame(mapping, columns=["Strike","Call","Put"])
-    # Ensure numeric
-    mapping_df["Strike"] = mapping_df["Strike"].astype(float)
+    # Create DataFrame
+    mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
 
+    # -------- FORMAT VALUES --------
+    mapping_df["Call"] = mapping_df["Call"].map(lambda x: f"{x:.2f}")
+    mapping_df["Put"] = mapping_df["Put"].map(lambda x: f"{x:.2f}")
+
+    # -------- HIGHLIGHT FUNCTION --------
     def highlight_strikes(row):
-        try:
-            s = int(float(row["Strike"]))   # ✅ force numeric
-        except:
-            return [""] * len(row)
+        s = int(row["Strike"])
 
         if 'atm_strike' in locals():
             if s == int(atm_strike):
-                return ["background-color: #fff3cd"] * len(row)   # Yellow
+                return ["background-color: #fff3cd"] * len(row)   # 🟡 ATM
             elif s == int(atm_strike + 100):
-                return ["background-color: #d4edda"] * len(row)   # Green
+                return ["background-color: #d4edda"] * len(row)   # 🟢 +100
             elif s == int(atm_strike - 100):
-                return ["background-color: #f8d7da"] * len(row)   # Red
+                return ["background-color: #f8d7da"] * len(row)   # 🔴 -100
 
         return [""] * len(row)
-    styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
 
-    #st.dataframe(styled_mapping, width='stretch', hide_index=True)
+    styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
 
     # -------- TAB 2 --------
     with tab2:
@@ -198,30 +199,15 @@ if uploaded_file and calculate:
 
         if uploaded_file and calculate:
 
-            # 🔄 SEE-SAW TABLE
             st.subheader("🔄 See-Saw Calculation")
 
-            mapping_df = pd.DataFrame(mapping, columns=["Strike","Call","Put"])
-
-            mapping_df["Call"] = mapping_df["Call"].map(lambda x: f"{x:.2f}")
-            mapping_df["Put"] = mapping_df["Put"].map(lambda x: f"{x:.2f}")
-
-            # format
-            #mapping_df["Strike"] = mapping_df["Strike"].map(lambda x: f"{int(x)}")
-            #mapping_df["Call"] = mapping_df["Call"].map(lambda x: f"{x:.2f}")
-            #mapping_df["Put"] = mapping_df["Put"].map(lambda x: f"{x:.2f}")
-
-            # style
-            styled_mapping = mapping_df.style.apply(highlight_strikes, axis=1)
-
-            # display
+            # ✅ display styled table
             st.write(styled_mapping)
-            
+
             # ----------- RIGHT SIDE RESULTS -----------
 
             if 'atm_strike' in locals():
 
-                # 1️⃣ ATM RESULT
                 diff = round(atm_ce - atm_pe, 2)
 
                 st.subheader("📍 Minimum Difference Strike (ATM)")
@@ -231,7 +217,6 @@ if uploaded_file and calculate:
 
                 st.divider()
 
-                # 2️⃣ BEP
                 ce_bep = get_price("CE", atm_strike - 100)
                 pe_bep = get_price("PE", atm_strike + 100)
 
@@ -243,7 +228,6 @@ if uploaded_file and calculate:
 
                 st.divider()
 
-                # 3️⃣ CHARTS
                 st.subheader("📈 Charts to be Used")
 
                 col1, col2 = st.columns(2)
@@ -253,6 +237,7 @@ if uploaded_file and calculate:
 
                 with col2:
                     st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
+    
 
     # -------- VARIATIONS --------
     with tab4:
