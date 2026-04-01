@@ -444,8 +444,8 @@ if uploaded_file and calculate:
                     </tr>
                     """
 
-                    if ce_low is not None:
-                        prev_ce_low = ce_low
+                    if pe_high is not None:
+                        prev_pe_high = pe_high
                     if pe_low is not None:
                         prev_pe_low = pe_low                
 
