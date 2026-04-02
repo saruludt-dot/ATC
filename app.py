@@ -236,8 +236,8 @@ if uploaded_file and calculate:
         html += f"""
     <tr style="background-color:{color}; color:{text_color}; font-weight:bold;">
         <td>{s}</td>
-        <td>{row['Call']:.2f}</td>
         <td>{row['Put']:.2f}</td>
+        <td>{row['Call']:.2f}</td>
     </tr>
     """
 
