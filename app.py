@@ -411,8 +411,8 @@ if uploaded_file and calculate:
                     ce_html += f"""
                     <tr style="background-color:{ce_bg}; color:{ce_text}; font-weight:bold;">
                     <td>{int(s)}</td>
-                    <td>{f"{ce_high:.2f}" if pd.notnull(ce_high) else ""}</td>
-                    <td>{f"{ce_low:.2f}" if pd.notnull(ce_low) else ""}</td>
+                    <td>{f"{pe_high:.2f}" if pd.notnull(pe_high) else ""}</td>
+                    <td>{f"{pe_low:.2f}" if pd.notnull(pe_low) else ""}</td>
                     </tr>
                     """
 
@@ -444,8 +444,8 @@ if uploaded_file and calculate:
                     pe_html += f"""
                     <tr style="background-color:{pe_bg}; color:{pe_text}; font-weight:bold;">
                     <td>{int(s)}</td>
-                    <td>{f"{pe_high:.2f}" if pd.notnull(pe_high) else ""}</td>
-                    <td>{f"{pe_low:.2f}" if pd.notnull(pe_low) else ""}</td>
+                    <td>{f"{ce_high:.2f}" if pd.notnull(ce_high) else ""}</td>
+                    <td>{f"{ce_low:.2f}" if pd.notnull(ce_low) else ""}</td>
                     </tr>
                     """
 
