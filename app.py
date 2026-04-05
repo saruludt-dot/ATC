@@ -165,7 +165,7 @@ if uploaded_file and calculate:
         key=lambda i: abs(float(strikes[i]) - float(strike))
     )
 
-    start = max(0, idx - 11)
+    start = max(0, idx - 13)
     end = min(len(strikes), idx + 12)
 
     for s in strikes[start:end]:
