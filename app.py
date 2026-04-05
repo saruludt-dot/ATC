@@ -298,6 +298,52 @@ if uploaded_file and calculate:
             # ✅ CORRECT DISPLAY
             components.html(html, height=600, scrolling=True)
 
+            # -------- TRADINGVIEW COPY --------
+
+            st.subheader("📌 TradingView Pine Input")
+
+            call_list = []
+            put_list = []
+
+            for _, row in mapping_df.iterrows():
+                strike = int(row["Strike"])
+                call_price = round(row["Call"], 2)
+                put_price = round(row["Put"], 2)
+
+                call_list.append(f"{strike},{call_price}")
+                put_list.append(f"{strike},{put_price}")
+
+            call_string = "[" + ",".join(call_list) + "]"
+            put_string = "[" + ",".join(put_list) + "]"
+
+            import streamlit.components.v1 as components
+
+            col1, col2 = st.columns(2)
+
+            # 🟢 CALL
+            with col1:
+                st.markdown("### 🟢 CALL")
+
+                components.html(f"""
+                <textarea id="callbox" style="width:100%;height:80px;">{call_string}</textarea>
+                <br>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('callbox').value)">
+                Copy CALL
+                </button>
+                """, height=120)
+
+            # 🔴 PUT
+            with col2:
+                st.markdown("### 🔴 PUT")
+
+                components.html(f"""
+                <textarea id="putbox" style="width:100%;height:80px;">{put_string}</textarea>
+                <br>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('putbox').value)">
+                Copy PUT
+                </button>
+                """, height=120)
+
             # ----------- ATM / BEP / CHARTS -----------
 
             if 'atm_strike' in locals():
