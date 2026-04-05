@@ -162,10 +162,10 @@ if uploaded_file and calculate:
 
     idx = min(
         range(len(strikes)),
-        key=lambda i: abs(float(strikes[i]) - float(strike))
+        key=lambda i: abs(float(strikes[i]) - float(atm_strike))
     )
 
-    start = max(0, idx - 12)
+    start = max(0, idx - 10)
     end = min(len(strikes), idx + 11)
 
     for s in strikes[start:end]:
