@@ -314,19 +314,19 @@ if uploaded_file and calculate:
             # ✅ CORRECT DISPLAY
             components.html(html, height=600, scrolling=True)
 
-             st.subheader("📥 Export to Excel")
+            st.subheader("📥 Export to Excel")
 
-             export_df = mapping_df.copy()
-             export_df.columns = ["Strike", "Call", "Put"]
+            export_df = mapping_df.copy()
+            export_df.columns = ["Strike", "Call", "Put"]
 
-             csv = export_df.to_csv(index=False).encode('utf-8')
+            csv = export_df.to_csv(index=False).encode('utf-8')
 
-             st.download_button(
-                 label="📥 Download CSV",
-                 data=csv,
-                 file_name="SeeSaw_Rules.csv",
-                 mime="text/csv"
-             )
+            st.download_button(
+                label="📥 Download CSV",
+                data=csv,
+                file_name="SeeSaw_Rules.csv",
+                mime="text/csv"
+            )
             # -------- TRADINGVIEW COPY --------
 
             st.subheader("📌 TradingView Pine Input")
