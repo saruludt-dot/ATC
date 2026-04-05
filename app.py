@@ -46,7 +46,7 @@ with col_logo:
 # -------- TABS --------
 with col_tabs:
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📥 Input", "📊 Average", "🔄 See-Saw", "📊 Variations", "📊 Average Only"
+    "📥 Input", "📊 Average", "📊 Average Only", "🔄 See-Saw", "📊 Variations" 
     ])
 
 # -------- INPUT --------
@@ -248,8 +248,48 @@ if uploaded_file and calculate:
     with tab2:
         st.dataframe(table_df)
 
-    # ----------- TAB 3 : SEE-SAW + RESULTS -----------
+    # -------- TAB 5 : AVERAGE ONLY --------
     with tab3:
+
+        if uploaded_file and calculate and 'atm_strike' in locals():
+
+            st.subheader("📊 Average Only (ATM ± 10 Strikes)")
+
+            all_strikes = sorted(
+                df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
+            )
+
+            if len(all_strikes) > 0:
+
+                # Find ATM index
+                idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
+
+                # Get 10 above & 10 below
+                selected_strikes = all_strikes[max(0, idx-10): idx+11]
+
+                avg_rows = []
+
+                for s in selected_strikes:
+
+                    ce = get_price("CE", s)
+                    pe = get_price("PE", s)
+
+                    if ce is not None and pe is not None and ce > 0 and pe > 0:
+                        avg = (ce + pe) / 2
+                        avg_rows.append([int(s), f"{avg:.2f}"])
+
+                avg_df = pd.DataFrame(avg_rows, columns=["Strike", "Average"])
+
+                # Highlight ATM
+                def highlight_atm(row):
+                    if row["Strike"] == int(atm_strike):
+                        return ["background-color: yellow; color: black; font-weight: bold"] * 2
+                    return [""] * 2
+
+                st.dataframe(avg_df.style.apply(highlight_atm, axis=1), use_container_width=True)
+
+    # ----------- TAB 3 : SEE-SAW + RESULTS -----------
+    with tab4:
 
         if uploaded_file and calculate:
 
@@ -295,7 +335,7 @@ if uploaded_file and calculate:
     
 
     # -------- VARIATIONS --------
-    with tab4:
+    with tab5:
 
         if uploaded_file and calculate and 'atm_strike' in locals():
 
@@ -462,43 +502,5 @@ if uploaded_file and calculate:
                 with col2:
                     components.html(pe_html, height=500, scrolling=True)
 
-    # -------- TAB 5 : AVERAGE ONLY --------
-    with tab5:
-
-        if uploaded_file and calculate and 'atm_strike' in locals():
-
-            st.subheader("📊 Average Only (ATM ± 10 Strikes)")
-
-            all_strikes = sorted(
-                df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
-            )
-
-            if len(all_strikes) > 0:
-
-                # Find ATM index
-                idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
-
-                # Get 10 above & 10 below
-                selected_strikes = all_strikes[max(0, idx-10): idx+11]
-
-                avg_rows = []
-
-                for s in selected_strikes:
-
-                    ce = get_price("CE", s)
-                    pe = get_price("PE", s)
-
-                    if ce is not None and pe is not None and ce > 0 and pe > 0:
-                        avg = (ce + pe) / 2
-                        avg_rows.append([int(s), f"{avg:.2f}"])
-
-                avg_df = pd.DataFrame(avg_rows, columns=["Strike", "Average"])
-
-                # Highlight ATM
-                def highlight_atm(row):
-                    if row["Strike"] == int(atm_strike):
-                        return ["background-color: yellow; color: black; font-weight: bold"] * 2
-                    return [""] * 2
-
-                st.dataframe(avg_df.style.apply(highlight_atm, axis=1), use_container_width=True)
+    
 
