@@ -181,25 +181,16 @@ if uploaded_file and calculate:
 
     st.subheader("📥 Export to Excel")
 
-    # Create clean dataframe
     export_df = mapping_df.copy()
     export_df.columns = ["Strike", "Call", "Put"]
 
-    # Convert to Excel
-    from io import BytesIO
+    csv = export_df.to_csv(index=False).encode('utf-8')
 
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        export_df.to_excel(writer, index=False, sheet_name='See-Saw')
-
-    excel_data = output.getvalue()
-
-    # Download button
     st.download_button(
-        label="📥 Download Excel",
-        data=excel_data,
-        file_name="SeeSaw_Rules.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        label="📥 Download CSV",
+        data=csv,
+        file_name="SeeSaw_Rules.csv",
+        mime="text/csv"
     )
 
     # -------- BUILD HTML TABLE --------
