@@ -490,7 +490,7 @@ if uploaded_file and calculate:
 
                     if ce is not None and pe is not None and ce > 0 and pe > 0:
                         avg = (ce + pe) / 2
-                        avg_rows.append([int(s), round(avg, 2)])
+                        avg_rows.append([float(s), round(avg, 2)])
 
                 avg_df = pd.DataFrame(avg_rows, columns=["Strike", "Average"])
 
