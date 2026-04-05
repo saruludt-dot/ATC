@@ -46,7 +46,7 @@ with col_logo:
 # -------- TABS --------
 with col_tabs:
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📥 Input", "📊 Average", "📊 Average Only", "🔄 See-Saw", "📊 Variations" 
+    "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations" 
     ])
 
 # -------- INPUT --------
