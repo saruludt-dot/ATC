@@ -362,12 +362,20 @@ if uploaded_file and calculate:
             call_list = []
             put_list = []
 
-            for _, row in mapping_df.iterrows():
+            # 🔵 CALL → DESCENDING
+            call_df = mapping_df.sort_values(by="Strike", ascending=False)
+
+            for _, row in call_df.iterrows():
                 strike = int(row["Strike"])
                 call_price = round(row["Call"], 2)
-                put_price = round(row["Put"], 2)
-
                 call_list.append(f"{strike},{call_price}")
+
+            # 🔴 PUT → ASCENDING
+            put_df = mapping_df.sort_values(by="Strike", ascending=True)
+
+            for _, row in put_df.iterrows():
+                strike = int(row["Strike"])
+                put_price = round(row["Put"], 2)
                 put_list.append(f"{strike},{put_price}")
 
             call_string = "[" + ",".join(call_list) + "]"
