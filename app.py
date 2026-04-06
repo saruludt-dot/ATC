@@ -219,14 +219,29 @@ if uploaded_file and calculate:
 
         # LEFT (Descending)
         left_strike = int(desc_df.iloc[i]["Strike"])
-        left_call = desc_df.iloc[i]["Put"]   # PUT → CALL
+        left_call = desc_df.iloc[i]["Put"]
 
         # RIGHT (Ascending)
         right_strike = int(asc_df.iloc[i]["Strike"])
-        right_put = asc_df.iloc[i]["Call"]   # CALL → PUT
+        right_put = asc_df.iloc[i]["Call"]
+
+        # 🎨 COLOR LOGIC
+        bg_color = "#111827"   # default dark
+        text_color = "white"
+
+        if 'atm_strike' in locals():
+            if left_strike == int(atm_strike) or right_strike == int(atm_strike):
+                bg_color = "#fff3cd"   # Yellow (ATM)
+                text_color = "black"
+            elif left_strike == int(atm_strike + 100) or right_strike == int(atm_strike + 100):
+                bg_color = "#d4edda"   # Green (+100)
+                text_color = "black"
+            elif left_strike == int(atm_strike - 100) or right_strike == int(atm_strike - 100):
+                bg_color = "#f8d7da"   # Red (-100)
+                text_color = "black"
 
         html += f"""
-    <tr style="color:white; font-weight:bold; background-color:#111827;">
+    <tr style="background-color:{bg_color}; color:{text_color}; font-weight:bold;">
         <td>{left_strike}</td>
         <td>{left_call:.2f}</td>
         <td>{right_strike}</td>
