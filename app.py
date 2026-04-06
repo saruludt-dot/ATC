@@ -177,22 +177,6 @@ if uploaded_file and calculate:
 
     mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
 
-    # -------- EXPORT TO EXCEL --------
-
-    #st.subheader("📥 Export to Excel")
-
-    #export_df = mapping_df.copy()
-    #export_df.columns = ["Strike", "Call", "Put"]
-
-    #csv = export_df.to_csv(index=False).encode('utf-8')
-
-    #st.download_button(
-        #label="📥 Download CSV",
-       # data=csv,
-       # file_name="SeeSaw_Rules.csv",
-       # mime="text/csv"
-  #  )
-
     # -------- BUILD HTML TABLE --------
 
     html = """<style>
@@ -223,42 +207,35 @@ if uploaded_file and calculate:
     <tr>
     <th>Strike</th>
     <th>Call</th>
+    <th>Strike</th>
     <th>Put</th>
     </tr>
     """
+    # Split ascending & descending
+    asc_df = mapping_df.sort_values(by="Strike")
+    desc_df = mapping_df.sort_values(by="Strike", ascending=False)
 
-    for _, row in mapping_df.iterrows():
-        s = int(row["Strike"])
+    for i in range(len(asc_df)):
 
-        # 🎨 COLOR LOGIC
-        color = ""
-        text_color = "white"
-        
-        if 'atm_strike' in locals():
-            if s == int(atm_strike):
-                color = "#fff3cd"   # Yellow
-                text_color = "black"
-            elif s == int(atm_strike + 100):
-                color = "#d4edda"   # Green
-                text_color = "black"
-            elif s == int(atm_strike - 100):
-                color = "#f8d7da"   # Red
-                text_color = "black"
+        # LEFT (Descending)
+        left_strike = int(desc_df.iloc[i]["Strike"])
+        left_call = desc_df.iloc[i]["Put"]   # PUT → CALL
+
+        # RIGHT (Ascending)
+        right_strike = int(asc_df.iloc[i]["Strike"])
+        right_put = asc_df.iloc[i]["Call"]   # CALL → PUT
 
         html += f"""
-    <tr style="background-color:{color}; color:{text_color}; font-weight:bold;">
-        <td>{s}</td>
-        <td>{row['Put']:.2f}</td>
-        <td>{row['Call']:.2f}</td>
+    <tr style="font-weight:bold;">
+        <td>{left_strike}</td>
+        <td>{left_call:.2f}</td>
+        <td>{right_strike}</td>
+        <td>{right_put:.2f}</td>
     </tr>
     """
+    
 
     html += "</table></div>"
-
-    # -------- DISPLAY --------
-    #st.markdown("### 🔄 See-Saw Calculation", unsafe_allow_html=True)
-    #st.markdown(html, unsafe_allow_html=True)
-    
 
     # -------- TAB 2 --------
     with tab2:
