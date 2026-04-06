@@ -197,8 +197,8 @@ if uploaded_file and calculate:
     .custom-table th {
         position: sticky;        /* 🔥 FREEZE HEADER */
         top: 0;
-        background-color: #111827;
-        color: white;
+        background-color: #ffc107;
+        color: black;
         padding: 10px;
         text-align: center;
         z-index: 2;
