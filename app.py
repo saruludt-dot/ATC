@@ -202,12 +202,13 @@ if uploaded_file and calculate:
         padding: 10px;
         text-align: center;
         z-index: 2;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
 
     .custom-table td {
         padding: 8px;
         text-align: center;
-        border-bottom: 1px solid #333;
+        border-bottom: 2px solid #555;
     }
     </style>
 
