@@ -246,7 +246,7 @@ if uploaded_file and calculate:
                     return "2nd Point: "
                 elif s == int(atm_strike + 100):
                     return "3rd Point: "
-                elif s == int(atm_strike - 50):
+                elif s == int(atm_strike - 100):
                     return "1st Point: "
                 return ""
 
@@ -263,7 +263,7 @@ if uploaded_file and calculate:
             elif (left_strike == int(atm_strike + 100) or right_strike == int(atm_strike + 100)):
                 bg_color = "#d4edda"
                 text_color = "black"
-            elif (left_strike == int(atm_strike - 50) or right_strike == int(atm_strike - 50)):
+            elif (left_strike == int(atm_strike - 100) or right_strike == int(atm_strike - 100)):
                 bg_color = "#f8d7da"
                 text_color = "black"
 
