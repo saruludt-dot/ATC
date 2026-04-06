@@ -179,22 +179,31 @@ if uploaded_file and calculate:
 
     # -------- BUILD HTML TABLE --------
 
-    html = """<style>
+    html = """
+    <style>
     .table-container {
         width: 100%;
-        overflow-x: auto;
+        height: 500px;           /* 🔥 FIXED HEIGHT for scroll */
+        overflow-y: auto;
+        border: 1px solid #333;
     }
+
     .custom-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
     }
+
     .custom-table th {
+        position: sticky;        /* 🔥 FREEZE HEADER */
+        top: 0;
         background-color: #111827;
         color: white;
         padding: 10px;
         text-align: center;
+        z-index: 2;
     }
+
     .custom-table td {
         padding: 8px;
         text-align: center;
