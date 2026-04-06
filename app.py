@@ -215,40 +215,59 @@ if uploaded_file and calculate:
     asc_df = mapping_df.sort_values(by="Strike")
     desc_df = mapping_df.sort_values(by="Strike", ascending=False)
 
-    for i in range(len(asc_df)):
+    # 🎯 FINAL SEE-SAW (CUSTOM 5 POINT STRUCTURE)
 
-        # LEFT (Descending)
-        left_strike = int(desc_df.iloc[i]["Strike"])
-        left_call = desc_df.iloc[i]["Put"]
+    if 'atm_strike' in locals():
 
-        # RIGHT (Ascending)
-        right_strike = int(asc_df.iloc[i]["Strike"])
-        right_put = asc_df.iloc[i]["Call"]
+        levels = [
+            int(atm_strike + 150),  # No label
+            int(atm_strike + 100),  # 3rd Point
+            int(atm_strike),        # 2nd Point (ATM)
+            int(atm_strike - 50),   # 1st Point
+            int(atm_strike - 100)   # No label
+        ]
 
-        # 🎨 COLOR LOGIC
-        bg_color = "#111827"   # default dark
-        text_color = "white"
+        for s in levels:
 
-        if 'atm_strike' in locals():
-            if left_strike == int(atm_strike) or right_strike == int(atm_strike):
-                bg_color = "#fff3cd"   # Yellow (ATM)
+            row = mapping_df[mapping_df["Strike"] == s]
+
+            if row.empty:
+                continue
+
+            call_val = row.iloc[0]["Put"]   # PUT → CALL
+            put_val  = row.iloc[0]["Call"]  # CALL → PUT
+
+            # 🎯 LABEL LOGIC
+            label = ""
+            if s == int(atm_strike):
+                label = "2nd Point: "
+            elif s == int(atm_strike + 100):
+                label = "3rd Point: "
+            elif s == int(atm_strike - 50):
+                label = "1st Point: "
+
+            # 🎨 COLOR LOGIC
+            bg_color = "#111827"
+            text_color = "white"
+
+            if s == int(atm_strike):
+                bg_color = "#fff3cd"
                 text_color = "black"
-            elif left_strike == int(atm_strike + 100) or right_strike == int(atm_strike + 100):
-                bg_color = "#d4edda"   # Green (+100)
+            elif s == int(atm_strike + 100):
+                bg_color = "#d4edda"
                 text_color = "black"
-            elif left_strike == int(atm_strike - 100) or right_strike == int(atm_strike - 100):
-                bg_color = "#f8d7da"   # Red (-100)
+            elif s == int(atm_strike - 50):
+                bg_color = "#f8d7da"
                 text_color = "black"
 
-        html += f"""
+            html += f"""
     <tr style="background-color:{bg_color}; color:{text_color}; font-weight:bold;">
-        <td>{left_strike}</td>
-        <td>{left_call:.2f}</td>
-        <td>{right_strike}</td>
-        <td>{right_put:.2f}</td>
+        <td>{label}{s}</td>
+        <td>{call_val:.2f}</td>
+        <td>{label}{s}</td>
+        <td>{put_val:.2f}</td>
     </tr>
     """
-    
 
     html += "</table></div>"
 
