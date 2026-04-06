@@ -226,7 +226,7 @@ if uploaded_file and calculate:
         right_put = asc_df.iloc[i]["Call"]   # CALL → PUT
 
         html += f"""
-    <tr style="font-weight:bold;">
+    <tr style="color:white; font-weight:bold; background-color:#111827;">
         <td>{left_strike}</td>
         <td>{left_call:.2f}</td>
         <td>{right_strike}</td>
