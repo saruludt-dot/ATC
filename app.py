@@ -211,64 +211,71 @@ if uploaded_file and calculate:
     <th>Put</th>
     </tr>
     """
-    # Split ascending & descending
-    asc_df = mapping_df.sort_values(by="Strike")
-    desc_df = mapping_df.sort_values(by="Strike", ascending=False)
+    # 🎯 FULL RANGE (ATM ±12) — PERFECT SEE-SAW ALIGNMENT
 
-    # 🎯 FINAL SEE-SAW (CUSTOM 5 POINT STRUCTURE)
+    asc_df = mapping_df.sort_values(by="Strike").reset_index(drop=True)
 
-    if 'atm_strike' in locals():
+    # Find ATM index
+    atm_index = None
+    for i, r in enumerate(asc_df.to_dict("records")):
+        if int(r["Strike"]) == int(atm_strike):
+            atm_index = i
+            break
 
-        levels = [
-            int(atm_strike + 150),  # No label
-            int(atm_strike + 100),  # 3rd Point
-            int(atm_strike),        # 2nd Point (ATM)
-            int(atm_strike - 50),   # 1st Point
-            int(atm_strike - 100)   # No label
-        ]
+    if atm_index is not None:
 
-        for s in levels:
+        start = max(0, atm_index - 12)
+        end = min(len(asc_df), atm_index + 13)
 
-            row = mapping_df[mapping_df["Strike"] == s]
+        asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
 
-            if row.empty:
-                continue
+        for i in range(len(asc_slice)):
 
-            call_val = row.iloc[0]["Put"]   # PUT → CALL
-            put_val  = row.iloc[0]["Call"]  # CALL → PUT
+            # RIGHT SIDE (PUT → ASCENDING ✅)
+            right_strike = int(asc_slice.iloc[i]["Strike"])
+            right_put = asc_slice.iloc[i]["Call"]
+
+            # LEFT SIDE (CALL → DESCENDING ✅)
+            left_row = asc_slice.iloc[len(asc_slice) - 1 - i]
+            left_strike = int(left_row["Strike"])
+            left_call = left_row["Put"]
 
             # 🎯 LABEL LOGIC
-            label = ""
-            if s == int(atm_strike):
-                label = "2nd Point: "
-            elif s == int(atm_strike + 100):
-                label = "3rd Point: "
-            elif s == int(atm_strike - 50):
-                label = "1st Point: "
+            def get_label(s):
+                if s == int(atm_strike):
+                    return "2nd Point: "
+                elif s == int(atm_strike + 100):
+                    return "3rd Point: "
+                elif s == int(atm_strike - 50):
+                    return "1st Point: "
+                return ""
+
+            left_label = get_label(left_strike)
+            right_label = get_label(right_strike)
 
             # 🎨 COLOR LOGIC
             bg_color = "#111827"
             text_color = "white"
 
-            if s == int(atm_strike):
+            if (left_strike == int(atm_strike) or right_strike == int(atm_strike)):
                 bg_color = "#fff3cd"
                 text_color = "black"
-            elif s == int(atm_strike + 100):
+            elif (left_strike == int(atm_strike + 100) or right_strike == int(atm_strike + 100)):
                 bg_color = "#d4edda"
                 text_color = "black"
-            elif s == int(atm_strike - 50):
+            elif (left_strike == int(atm_strike - 50) or right_strike == int(atm_strike - 50)):
                 bg_color = "#f8d7da"
                 text_color = "black"
 
             html += f"""
     <tr style="background-color:{bg_color}; color:{text_color}; font-weight:bold;">
-        <td>{label}{s}</td>
-        <td>{call_val:.2f}</td>
-        <td>{label}{s}</td>
-        <td>{put_val:.2f}</td>
+        <td>{left_label}{left_strike}</td>
+        <td>{left_call:.2f}</td>
+        <td>{right_label}{right_strike}</td>
+        <td>{right_put:.2f}</td>
     </tr>
     """
-
+            
     html += "</table></div>"
 
     # -------- TAB 2 --------
