@@ -383,7 +383,7 @@ if uploaded_file and calculate:
             call_df = mapping_df.sort_values(by="Strike", ascending=False)
 
             for _, row in call_df.iterrows():
-                strike = int(row["Strike"])
+                strike = int(row["Strike"] - 100)   # ✅ FIX
                 call_price = round(row["Call"], 2)
                 call_list.append(f"{strike},{call_price}")
 
@@ -391,14 +391,14 @@ if uploaded_file and calculate:
             put_df = mapping_df.sort_values(by="Strike", ascending=True)
 
             for _, row in put_df.iterrows():
-                strike = int(row["Strike"])
+                strike = int(row["Strike"] + 100)   # ✅ FIX
                 put_price = round(row["Put"], 2)
                 put_list.append(f"{strike},{put_price}")
 
             # 🎯 ADD BEP INTO BOTH LISTS (FINAL FIX)
             if bep_value is not None:
-                call_list.append(f"{int(atm_strike)},{bep_value}")
-                put_list.append(f"{int(atm_strike)},{bep_value}")
+                call_list.append(f"{int(atm_strike - 100)},{bep_value}")
+                put_list.append(f"{int(atm_strike + 100)},{bep_value}")
 
             # -------- STRING FORMAT --------
             call_string = "[" + ",".join(call_list) + "]"
