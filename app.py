@@ -384,7 +384,7 @@ if uploaded_file and calculate:
 
             for _, row in call_df.iterrows():
                 strike = int(row["Strike"] - 100)   # ✅ FIX
-                call_price = round(row["Call"], 2)
+                call_price = round(row["Put"], 2)
                 call_list.append(f"{strike},{call_price}")
 
             # 🔴 PUT → ASCENDING
@@ -392,7 +392,7 @@ if uploaded_file and calculate:
 
             for _, row in put_df.iterrows():
                 strike = int(row["Strike"] + 100)   # ✅ FIX
-                put_price = round(row["Put"], 2)
+                put_price = round(row["Call"], 2)
                 put_list.append(f"{strike},{put_price}")
 
             # 🎯 ADD BEP INTO BOTH LISTS (FINAL FIX)
