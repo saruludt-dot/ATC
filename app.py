@@ -234,8 +234,8 @@ if uploaded_file and calculate:
 
     if atm_index is not None:
 
-        start = max(0, atm_index - 12)
-        end = min(len(asc_df), atm_index + 13)
+        start = max(0, atm_index - 20)
+        end = min(len(asc_df), atm_index + 21)
 
         asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
 
