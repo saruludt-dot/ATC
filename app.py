@@ -378,6 +378,18 @@ if uploaded_file and calculate:
                 put_price = round(row["Put"], 2)
                 put_list.append(f"{strike},{put_price}")
 
+            # 🎯 ADD BEP (same for both)
+            if 'atm_strike' in locals():
+                ce_bep = get_price("CE", atm_strike - 100)
+                pe_bep = get_price("PE", atm_strike + 100)
+
+                if ce_bep is not None and pe_bep is not None:
+                    bep = round((ce_bep + pe_bep) / 2, 2)
+
+                    # 👉 Add BEP as ATM level
+                    call_list.append(f"{int(atm_strike)},{bep}")
+                    put_list.append(f"{int(atm_strike)},{bep}")
+
             call_string = "[" + ",".join(call_list) + "]"
             put_string = "[" + ",".join(put_list) + "]"
 
