@@ -331,7 +331,6 @@ if uploaded_file and calculate:
                     return [""] * 2
 
                 st.dataframe(avg_df.style.apply(highlight_atm, axis=1), use_container_width=True)
-
     # ----------- TAB 3 : SEE-SAW + RESULTS -----------
     with tab4:
 
@@ -339,9 +338,10 @@ if uploaded_file and calculate:
 
             st.subheader("🔄 See-Saw Calculation")
 
-            # ✅ CORRECT DISPLAY
+            # ✅ DISPLAY TABLE
             components.html(html, height=600, scrolling=True)
 
+            # -------- EXPORT --------
             st.subheader("📥 Export to Excel")
 
             export_df = mapping_df.copy()
@@ -355,12 +355,12 @@ if uploaded_file and calculate:
                 file_name="SeeSaw_Rules.csv",
                 mime="text/csv"
             )
-            # -------- TRADINGVIEW COPY --------
 
+            # -------- TRADINGVIEW --------
             st.subheader("📌 TradingView Pine Input")
 
-            # 🎯 BEP VALUE DISPLAY (ADD HERE)
-            bep_string = "NA"
+            # 🎯 CALCULATE BEP ONLY ONCE
+            bep_value = None
 
             if 'atm_strike' in locals():
                 ce_bep = get_price("CE", atm_strike - 100)
@@ -368,14 +368,18 @@ if uploaded_file and calculate:
 
                 if ce_bep is not None and pe_bep is not None:
                     bep_value = round((ce_bep + pe_bep) / 2, 2)
-                    bep_string = str(bep_value)
 
-            st.markdown(f"### 🟡 BEP: {bep_string}")
+            # 🎯 DISPLAY BEP
+            if bep_value:
+                st.markdown(f"### 🟡 BEP: {bep_value}")
+            else:
+                st.markdown("### 🟡 BEP: NA")
 
+            # -------- BUILD LISTS --------
             call_list = []
             put_list = []
 
-            # 🔵 CALL → DESCENDING
+            # 🟢 CALL → DESCENDING
             call_df = mapping_df.sort_values(by="Strike", ascending=False)
 
             for _, row in call_df.iterrows():
@@ -391,25 +395,16 @@ if uploaded_file and calculate:
                 put_price = round(row["Put"], 2)
                 put_list.append(f"{strike},{put_price}")
 
-            # 🎯 ADD BEP (same for both)
-            bep_value = None
+            # 🎯 ADD BEP INTO BOTH LISTS (FINAL FIX)
+            if bep_value is not None:
+                call_list.append(f"{int(atm_strike)},{bep_value}")
+                put_list.append(f"{int(atm_strike)},{bep_value}")
 
-            if 'atm_strike' in locals():
-                ce_bep = get_price("CE", atm_strike - 100)
-                pe_bep = get_price("PE", atm_strike + 100)
-
-                if ce_bep is not None and pe_bep is not None:
-                    bep_value = round((ce_bep + pe_bep) / 2, 2)
-
-                    # 👉 Add BEP as ATM level
-                    call_list.append(f"{int(atm_strike)},{bep}")
-                    put_list.append(f"{int(atm_strike)},{bep}")
-
+            # -------- STRING FORMAT --------
             call_string = "[" + ",".join(call_list) + "]"
             put_string = "[" + ",".join(put_list) + "]"
 
-            import streamlit.components.v1 as components
-
+            # -------- COPY UI --------
             col1, col2 = st.columns(2)
 
             # 🟢 CALL
@@ -436,8 +431,7 @@ if uploaded_file and calculate:
                 </button>
                 """, height=120)
 
-            # ----------- ATM / BEP / CHARTS -----------
-
+            # -------- ATM / BEP / CHART --------
             if 'atm_strike' in locals():
 
                 diff = round(atm_ce - atm_pe, 2)
@@ -449,14 +443,9 @@ if uploaded_file and calculate:
 
                 st.divider()
 
-                ce_bep = get_price("CE", atm_strike - 100)
-                pe_bep = get_price("PE", atm_strike + 100)
-
-                if ce_bep is not None and pe_bep is not None and ce_bep > 0 and pe_bep > 0:
-                    bep = round((ce_bep + pe_bep) / 2, 2)
-
+                if bep_value is not None:
                     st.subheader("💰 BEP")
-                    st.success(f"{bep:.2f}")
+                    st.success(f"{bep_value:.2f}")
 
                 st.divider()
 
@@ -469,7 +458,6 @@ if uploaded_file and calculate:
 
                 with col2:
                     st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
-    
     
 
     # -------- VARIATIONS --------
