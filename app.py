@@ -165,8 +165,8 @@ if uploaded_file and calculate:
         key=lambda i: abs(float(strikes[i]) - float(atm_strike))
     )
 
-    start = max(0, idx - 10)
-    end = min(len(strikes), idx + 11)
+    start = max(0, idx - 16)
+    end = min(len(strikes), idx + 17)
 
     for s in strikes[start:end]:
         pe = get_price("PE", s + 100)
