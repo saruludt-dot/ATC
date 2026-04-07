@@ -359,6 +359,19 @@ if uploaded_file and calculate:
 
             st.subheader("📌 TradingView Pine Input")
 
+            # 🎯 BEP VALUE DISPLAY (ADD HERE)
+            bep_string = "NA"
+
+            if 'atm_strike' in locals():
+                ce_bep = get_price("CE", atm_strike - 100)
+                pe_bep = get_price("PE", atm_strike + 100)
+
+                if ce_bep is not None and pe_bep is not None:
+                    bep_value = round((ce_bep + pe_bep) / 2, 2)
+                    bep_string = str(bep_value)
+
+            st.markdown(f"### 🟡 BEP: {bep_string}")
+
             call_list = []
             put_list = []
 
@@ -379,12 +392,14 @@ if uploaded_file and calculate:
                 put_list.append(f"{strike},{put_price}")
 
             # 🎯 ADD BEP (same for both)
+            bep_value = None
+
             if 'atm_strike' in locals():
                 ce_bep = get_price("CE", atm_strike - 100)
                 pe_bep = get_price("PE", atm_strike + 100)
 
                 if ce_bep is not None and pe_bep is not None:
-                    bep = round((ce_bep + pe_bep) / 2, 2)
+                    bep_value = round((ce_bep + pe_bep) / 2, 2)
 
                     # 👉 Add BEP as ATM level
                     call_list.append(f"{int(atm_strike)},{bep}")
