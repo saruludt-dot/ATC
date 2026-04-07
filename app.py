@@ -165,8 +165,8 @@ if uploaded_file and calculate:
         key=lambda i: abs(float(strikes[i]) - float(atm_strike))
     )
 
-    start = max(0, idx - 20)
-    end = min(len(strikes), idx + 21)
+    start = max(0, idx - 14)
+    end = min(len(strikes), idx + 15)
 
     for s in strikes[start:end]:
         pe = get_price("PE", s + 100)
@@ -234,8 +234,8 @@ if uploaded_file and calculate:
 
     if atm_index is not None:
 
-        start = max(0, atm_index - 20)
-        end = min(len(asc_df), atm_index + 21)
+        start = max(0, atm_index - 14)
+        end = min(len(asc_df), atm_index + 15)
 
         asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
 
