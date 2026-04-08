@@ -484,7 +484,18 @@ if uploaded_file and calculate:
         if backup_file:
 
             try:
-                backup_df = pd.read_csv(backup_file)
+                import io
+
+                try:
+                    stringio = io.StringIO(backup_file.getvalue().decode("utf-8"))
+                    backup_df = pd.read_csv(stringio)
+                except:
+                    try:
+                        stringio = io.StringIO(backup_file.getvalue().decode("latin1"))
+                        backup_df = pd.read_csv(stringio)
+                    except Exception as e:
+                        st.error(f"❌ Backup file read failed: {e}")
+                        st.stop()
 
                 st.write("✅ Backup file loaded")
                 st.write("Columns:", backup_df.columns.tolist())
