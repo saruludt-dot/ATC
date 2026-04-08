@@ -472,22 +472,31 @@ if uploaded_file and calculate:
 
         expiry_input = st.date_input("Select Expiry for Today File")
 
-        if expiry_input is None:
-            st.warning("Please select expiry")
-
         col1, col2 = st.columns(2)
 
         with col1:
-            backup_file = st.file_uploader("Upload Backup CSV (Day 1 Avg)", key="backup")
+            backup_file = st.file_uploader("Upload Backup CSV (Day 1 Avg)", key="backup_tab6")
 
         with col2:
-            today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today")
+            today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today_tab6")
 
-        if backup_file is not None:
+        # ✅ BUTTON CONTROL (IMPORTANT)
+        run_check = st.button("Run Completion Check")
+
+        if run_check:
+
+            if backup_file is None or today_file is None:
+                st.warning("Please upload both files")
+                st.stop()
+
+            if expiry_input is None:
+                st.warning("Please select expiry")
+                st.stop()
 
             import io
 
             try:
+                # -------- BACKUP READ --------
                 try:
                     stringio = io.StringIO(backup_file.getvalue().decode("utf-8"))
                     backup_df = pd.read_csv(stringio)
@@ -495,17 +504,36 @@ if uploaded_file and calculate:
                     stringio = io.StringIO(backup_file.getvalue().decode("latin1"))
                     backup_df = pd.read_csv(stringio)
 
-                # CLEAN
                 backup_df = backup_df.loc[:, ~backup_df.columns.str.contains("^Unnamed")]
                 backup_df.columns = backup_df.columns.str.strip()
 
-                # DEBUG
-                st.success("✅ Backup Loaded Successfully")
-                st.write("Columns:", backup_df.columns.tolist())
-                st.dataframe(backup_df.head())
+                st.success("✅ Backup Loaded")
+
+                # -------- TODAY READ --------
+                today_df = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
+
+                today_df.columns = today_df.columns.str.strip()
+                today_df["Option Type"] = today_df["Option Type"].astype(str).str.upper().str.strip()
+                today_df["Strike Price"] = pd.to_numeric(today_df["Strike Price"], errors="coerce")
+
+                today_df["High Price"] = pd.to_numeric(today_df["High Price"], errors="coerce")
+                today_df["Low Price"] = pd.to_numeric(today_df["Low Price"], errors="coerce")
+
+                # -------- EXPIRY FILTER --------
+                expiry_str = expiry_input.strftime("%d-%b-%Y")
+                today_df["Expiry Date"] = today_df["Expiry Date"].astype(str).str.strip()
+                today_df = today_df[today_df["Expiry Date"] == expiry_str]
+
+                if today_df.empty:
+                    st.error("No data for selected expiry")
+                    st.stop()
+
+                st.success("✅ Today File Loaded")
+
+                st.write("Ready for comparison 👍")
 
             except Exception as e:
-                st.error(f"❌ Backup file error: {e}")
+                st.error(f"Error: {e}")
     
 
     # -------- VARIATIONS --------
