@@ -195,16 +195,6 @@ if uploaded_file and calculate:
 
     mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
 
-    # ✅ DEFAULT RANGE (GLOBAL)
-    if "above" not in st.session_state:
-        st.session_state.above = 14
-
-    if "below" not in st.session_state:
-        st.session_state.below = 14
-
-    above = st.session_state.above
-    below = st.session_state.below
-
     # -------- BUILD HTML TABLE --------
 
     html = """
@@ -266,8 +256,8 @@ if uploaded_file and calculate:
             above = st.session_state.get("above", 14)
             below = st.session_state.get("below", 14)
 
-            start = max(0, atm_index - below)
-            end = min(len(asc_df), atm_index + above + 1)
+            start = max(0, atm_index - 14)
+            end = min(len(asc_df), atm_index + 15)
 
             asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
 
@@ -354,18 +344,6 @@ if uploaded_file and calculate:
         if uploaded_file and calculate:
 
             st.subheader("🔄 See-Saw Calculation")
-
-            # 🔽 CUSTOM RANGE INPUT
-            st.subheader("⚙️ Custom Strike Range")
-
-            col1, col2 = st.columns(2)
-
-            above = col1.number_input("Above ATM", min_value=1, max_value=50, value=st.session_state.get("above", 14))
-            below = col2.number_input("Below ATM", min_value=1, max_value=50, value=st.session_state.get("below", 14))
-
-            # ✅ ALWAYS STORE (no button needed)
-            st.session_state.above = above
-            st.session_state.below = below
 
             # ✅ DISPLAY TABLE
             components.html(html, height=600, scrolling=True)
