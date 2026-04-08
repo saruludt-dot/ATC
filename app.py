@@ -316,7 +316,7 @@ if uploaded_file and calculate:
                 idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
 
                 # Get 10 above & 10 below
-                selected_strikes = all_strikes[max(0, idx-20): idx+21]
+                selected_strikes = all_strikes[max(0, idx-24): idx+25]
 
                 avg_rows = []
 
