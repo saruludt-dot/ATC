@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
+import streamlit.components.v1 as components
 
 # -------- LOGIN --------
 def check_login():
@@ -44,10 +45,11 @@ with col_logo:
 
 # -------- TABS --------
 with col_tabs:
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4 = st.tabs([
         "📥 Input",
         "📊 16 Rules",
-        "📊 Average + Completion"
+        "📊 Average + Completion",
+        "🔄 See-Saw"
     ])
 
 # -------- INPUT --------
@@ -55,7 +57,6 @@ with tab1:
     yesterday_file = st.file_uploader("Upload Yesterday CSV")
     today_file = st.file_uploader("Upload Today CSV")
     expiry = st.date_input("Expiry Date")
-    strike = st.number_input("Strike", step=50)
     calculate = st.button("Calculate")
 
 # -------- MAIN --------
@@ -65,7 +66,7 @@ if yesterday_file and today_file and calculate:
         df_y = pd.read_csv(yesterday_file, on_bad_lines='skip', engine='python')
         df_t = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
 
-        # -------- CLEAN FUNCTION --------
+        # -------- CLEAN --------
         def clean(df):
             df.columns = df.columns.str.strip()
             df["Expiry Date"] = df["Expiry Date"].astype(str).str.strip()
@@ -90,8 +91,7 @@ if yesterday_file and today_file and calculate:
             ]
             return r.iloc[0]["Close Price"] if not r.empty else None
 
-        # -------- STRIKES --------
-        strikes = df_y[df_y["Expiry Date"]==expiry_str]["Strike Price"].unique()
+        strikes = sorted(df_y[df_y["Expiry Date"]==expiry_str]["Strike Price"].unique())
 
         # -------- AVERAGE --------
         avg_rows = []
@@ -101,8 +101,7 @@ if yesterday_file and today_file and calculate:
             pe = get_price(df_y, "PE", s)
 
             if ce and pe:
-                avg = (ce + pe) / 2
-                avg_rows.append([int(s), round(avg,2)])
+                avg_rows.append([int(s), round((ce+pe)/2,2)])
 
         avg_df = pd.DataFrame(avg_rows, columns=["Strike", "Average"])
 
@@ -110,9 +109,6 @@ if yesterday_file and today_file and calculate:
         with tab3:
 
             st.subheader("📊 Average")
-
-            avg_df = avg_df.sort_values(by="Strike").reset_index(drop=True)
-
             st.dataframe(avg_df, use_container_width=True)
 
             st.subheader("✅ Completion Check")
@@ -159,30 +155,57 @@ if yesterday_file and today_file and calculate:
                 "CE ✔","PE ✔"
             ])
 
-            # -------- CLEAN --------
-            res_df = res_df.sort_values(by="Strike").reset_index(drop=True)
             res_df = res_df.fillna("")
 
-            # -------- COLOR --------
             def highlight(row):
                 styles = [""] * len(row)
-
                 if row["CE ✔"] == "✅":
-                    styles[6] = "background-color:#d4edda;color:black"
-                elif row["CE ✔"] == "❌":
-                    styles[6] = "background-color:#f8d7da;color:black"
-
+                    styles[6] = "background-color:#d4edda"
+                if row["CE ✔"] == "❌":
+                    styles[6] = "background-color:#f8d7da"
                 if row["PE ✔"] == "✅":
-                    styles[7] = "background-color:#d4edda;color:black"
-                elif row["PE ✔"] == "❌":
-                    styles[7] = "background-color:#f8d7da;color:black"
-
+                    styles[7] = "background-color:#d4edda"
+                if row["PE ✔"] == "❌":
+                    styles[7] = "background-color:#f8d7da"
                 return styles
 
-            st.dataframe(
-                res_df.style.apply(highlight, axis=1),
-                use_container_width=True
-            )
+            st.dataframe(res_df.style.apply(highlight, axis=1), use_container_width=True)
+
+        # -------- TAB 4 SEE-SAW --------
+        with tab4:
+
+            st.subheader("🔄 See-Saw View")
+
+            mapping = []
+
+            for s in strikes:
+                pe = get_price(df_y, "PE", s + 100)
+                ce = get_price(df_y, "CE", s - 100)
+
+                if pe is not None and ce is not None:
+                    mapping.append([int(s), ce, pe])
+
+            mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
+
+            html = "<table border='1' style='width:100%;text-align:center'>"
+            html += "<tr><th>Strike</th><th>Call</th><th>Strike</th><th>Put</th></tr>"
+
+            for i in range(len(mapping_df)):
+                left = mapping_df.iloc[len(mapping_df)-1-i]
+                right = mapping_df.iloc[i]
+
+                html += f"""
+                <tr>
+                <td>{int(left['Strike'])}</td>
+                <td>{left['Put']:.2f}</td>
+                <td>{int(right['Strike'])}</td>
+                <td>{right['Call']:.2f}</td>
+                </tr>
+                """
+
+            html += "</table>"
+
+            components.html(html, height=500, scrolling=True)
 
     except Exception as e:
         st.error(f"Error: {e}")
