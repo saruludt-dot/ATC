@@ -51,15 +51,20 @@ with col_tabs:
 
 # -------- INPUT --------
 with tab1:
-    uploaded_file = st.file_uploader("Upload CSV")
+    yesterday_file = st.file_uploader("Upload Yesterday CSV")
+    today_file = st.file_uploader("Upload Today CSV")
     expiry = st.date_input("Expiry Date")
     strike = st.number_input("Strike", step=50)
     calculate = st.button("Calculate")
 
 # -------- MAIN LOGIC --------
-if uploaded_file and calculate:
+if yesterday_file and today_file and calculate:
 
-    df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
+    df_y = pd.read_csv(yesterday_file, on_bad_lines='skip', engine='python')
+    df_t = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
+
+    # Use yesterday as main df for existing logic
+    df = df_y
 
     df.columns = df.columns.str.strip()
     df["Expiry Date"] = df["Expiry Date"].astype(str).str.strip()
@@ -73,8 +78,12 @@ if uploaded_file and calculate:
 
     expiry_str = expiry.strftime("%d-%b-%Y")
 
-    def get_price(opt, s):
-        r = df[(df["Expiry Date"]==expiry_str) & (df["Option Type"]==opt) & (df["Strike Price"]==s)]
+    def get_price(data, opt, s):
+        r = data[
+            (data["Expiry Date"]==expiry_str) &
+            (data["Option Type"]==opt) &
+            (data["Strike Price"]==s)
+        ]
         return r.iloc[0]["Close Price"] if not r.empty else None
 
     # -------- ATM --------
@@ -82,8 +91,8 @@ if uploaded_file and calculate:
     strikes = df[df["Expiry Date"]==expiry_str]["Strike Price"].unique()
 
     for s in strikes:
-        ce = get_price("CE", s)
-        pe = get_price("PE", s)
+        ce = get_price(df, "CE", s)
+        pe = get_price(df, "PE", s)
         if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
             diff_list.append((s, ce, pe, abs(ce-pe)))
 
@@ -322,8 +331,8 @@ if uploaded_file and calculate:
 
                 for s in selected_strikes:
 
-                    ce = get_price("CE", s)
-                    pe = get_price("PE", s)
+                    ce = get_price(df, "CE", s)
+                    pe = get_price(df, "PE", s)
 
                     if ce is not None and pe is not None and ce > 0 and pe > 0:
                         avg = (ce + pe) / 2
@@ -338,6 +347,70 @@ if uploaded_file and calculate:
                     return [""] * 2
 
                 st.dataframe(avg_df.style.apply(highlight_atm, axis=1), use_container_width=True)
+
+st.subheader("✅ Completion Check (Yesterday Avg vs Today Range)")
+
+# -------- PREP TODAY DF --------
+df_t.columns = df_t.columns.str.strip()
+df_t["Option Type"] = df_t["Option Type"].str.strip().str.upper()
+df_t["Strike Price"] = df_t["Strike Price"].astype(str).str.replace(",", "").astype(float)
+
+df_t["High Price"] = pd.to_numeric(df_t["High Price"], errors="coerce")
+df_t["Low Price"] = pd.to_numeric(df_t["Low Price"], errors="coerce")
+
+df_t["Expiry Date"] = df_t["Expiry Date"].astype(str).str.strip()
+df_t = df_t[df_t["Expiry Date"] == expiry_str]
+
+result = []
+
+for _, row in avg_df.iterrows():
+
+    strike_val = int(row["Strike"])
+    avg_val = float(row["Average"])
+
+    ce_row = df_t[
+        (df_t["Option Type"]=="CE") &
+        (df_t["Strike Price"]==strike_val)
+    ]
+
+    pe_row = df_t[
+        (df_t["Option Type"]=="PE") &
+        (df_t["Strike Price"]==strike_val)
+    ]
+
+    ce_low = ce_high = pe_low = pe_high = None
+
+    if not ce_row.empty:
+        ce_low = ce_row.iloc[0]["Low Price"]
+        ce_high = ce_row.iloc[0]["High Price"]
+
+    if not pe_row.empty:
+        pe_low = pe_row.iloc[0]["Low Price"]
+        pe_high = pe_row.iloc[0]["High Price"]
+
+    def check(avg, low, high):
+        if low is None or high is None:
+            return "NA"
+        if min(low, high) <= avg <= max(low, high):
+            return "✅"
+        return "❌"
+
+    result.append([
+        strike_val, avg_val,
+        ce_low, ce_high,
+        pe_low, pe_high,
+        check(avg_val, ce_low, ce_high),
+        check(avg_val, pe_low, pe_high)
+    ])
+
+result_df = pd.DataFrame(result, columns=[
+    "Strike","Avg",
+    "CE Low","CE High",
+    "PE Low","PE High",
+    "CE ✔","PE ✔"
+])
+
+st.dataframe(result_df, use_container_width=True)
     # ----------- TAB 3 : SEE-SAW + RESULTS -----------
     with tab4:
 
