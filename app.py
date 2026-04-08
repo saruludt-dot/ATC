@@ -153,6 +153,24 @@ if uploaded_file and calculate:
 
     # -------- SEE-SAW (HTML VERSION) --------
 
+    # ✅ LABEL FUNCTIONS (MOVE HERE)
+    def get_left_label(s):
+        if s == int(atm_strike):
+            return "2nd Point: "
+        elif s == int(atm_strike + 100):
+            return "3rd Point: "
+        elif s == int(atm_strike - 100):
+            return "1st Point: "
+        return ""
+
+    def get_right_label(s):
+        if s == int(atm_strike):
+            return "2nd Point: "
+        elif s == int(atm_strike + 100):
+            return "1st Point: "   # swapped
+        elif s == int(atm_strike - 100):
+            return "3rd Point: "   # swapped
+        return ""
     mapping = []
     strikes = sorted([s for s in strikes if pd.notnull(s)])
 
