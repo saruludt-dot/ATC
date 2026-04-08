@@ -469,7 +469,10 @@ if uploaded_file and calculate:
     with tab6:
 
         st.subheader("📊 Completion Check (Backup vs Today)")
+        expiry_input = st.date_input("Select Expiry for Today File")
 
+        if not expiry_input:
+            st.stop()
         col1, col2 = st.columns(2)
 
         with col1:
@@ -512,6 +515,18 @@ if uploaded_file and calculate:
                 # -------- CLEAN TODAY --------
                 today_df.columns = today_df.columns.str.strip()
 
+                # -------- FILTER BY EXPIRY --------
+                expiry_str = expiry_input.strftime("%d-%b-%Y")
+
+                today_df["Expiry Date"] = today_df["Expiry Date"].astype(str).str.strip()
+
+                today_df = today_df[today_df["Expiry Date"] == expiry_str]
+
+                # Safety check
+                if today_df.empty:
+                    st.error("❌ No data found for selected expiry")
+                    st.stop()
+                    
                 today_df["Option Type"] = today_df["Option Type"].astype(str).str.strip().str.upper()
                 today_df["Strike Price"] = pd.to_numeric(today_df["Strike Price"], errors="coerce")
 
