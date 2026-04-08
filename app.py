@@ -469,41 +469,43 @@ if uploaded_file and calculate:
     with tab6:
 
         st.subheader("📊 Completion Check (Backup vs Today)")
+
         expiry_input = st.date_input("Select Expiry for Today File")
 
-        if not expiry_input:
-            st.stop()
+        if expiry_input is None:
+            st.warning("Please select expiry")
+
         col1, col2 = st.columns(2)
 
         with col1:
             backup_file = st.file_uploader("Upload Backup CSV (Day 1 Avg)", key="backup")
 
         with col2:
-           today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today")
+            today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today")
 
-        if backup_file:
+        if backup_file is not None:
+
+            import io
 
             try:
-                import io
-
                 try:
                     stringio = io.StringIO(backup_file.getvalue().decode("utf-8"))
                     backup_df = pd.read_csv(stringio)
                 except:
-                    try:
-                        stringio = io.StringIO(backup_file.getvalue().decode("latin1"))
-                        backup_df = pd.read_csv(stringio)
-                    except Exception as e:
-                        st.error(f"❌ Backup file read failed: {e}")
-                        st.stop()
+                    stringio = io.StringIO(backup_file.getvalue().decode("latin1"))
+                    backup_df = pd.read_csv(stringio)
 
-                st.write("✅ Backup file loaded")
+                # CLEAN
+                backup_df = backup_df.loc[:, ~backup_df.columns.str.contains("^Unnamed")]
+                backup_df.columns = backup_df.columns.str.strip()
+
+                # DEBUG
+                st.success("✅ Backup Loaded Successfully")
                 st.write("Columns:", backup_df.columns.tolist())
-                st.write(backup_df.head())
+                st.dataframe(backup_df.head())
 
             except Exception as e:
                 st.error(f"❌ Backup file error: {e}")
-                st.stop()
     
 
     # -------- VARIATIONS --------
