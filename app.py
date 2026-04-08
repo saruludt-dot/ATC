@@ -255,9 +255,9 @@ if uploaded_file and calculate:
                 if s == int(atm_strike):
                     return "2nd Point: "
                 elif s == int(atm_strike + 100):
-                    return "3rd Point: "
-                elif s == int(atm_strike - 100):
                     return "1st Point: "
+                elif s == int(atm_strike - 100):
+                    return "3rd Point: "
                 return ""
 
             left_label = get_label(left_strike)
