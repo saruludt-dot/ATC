@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import base64
-import streamlit.components.v1 as components
 
 # -------- LOGIN --------
 def check_login():
@@ -45,7 +44,11 @@ with col_logo:
 
 # -------- TABS --------
 with col_tabs:
-    tab1, tab2, tab3 = st.tabs(["📥 Input", "📊 16 Rules", "📊 Average + Completion"])
+    tab1, tab2, tab3 = st.tabs([
+        "📥 Input",
+        "📊 16 Rules",
+        "📊 Average + Completion"
+    ])
 
 # -------- INPUT --------
 with tab1:
@@ -62,7 +65,7 @@ if yesterday_file and today_file and calculate:
         df_y = pd.read_csv(yesterday_file, on_bad_lines='skip', engine='python')
         df_t = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
 
-        # -------- CLEAN --------
+        # -------- CLEAN FUNCTION --------
         def clean(df):
             df.columns = df.columns.str.strip()
             df["Expiry Date"] = df["Expiry Date"].astype(str).str.strip()
@@ -90,7 +93,7 @@ if yesterday_file and today_file and calculate:
         # -------- STRIKES --------
         strikes = df_y[df_y["Expiry Date"]==expiry_str]["Strike Price"].unique()
 
-        # -------- AVG --------
+        # -------- AVERAGE --------
         avg_rows = []
 
         for s in strikes:
@@ -103,10 +106,13 @@ if yesterday_file and today_file and calculate:
 
         avg_df = pd.DataFrame(avg_rows, columns=["Strike", "Average"])
 
-        # -------- TAB 3 OUTPUT --------
+        # -------- TAB 3 --------
         with tab3:
 
             st.subheader("📊 Average")
+
+            avg_df = avg_df.sort_values(by="Strike").reset_index(drop=True)
+
             st.dataframe(avg_df, use_container_width=True)
 
             st.subheader("✅ Completion Check")
@@ -135,7 +141,7 @@ if yesterday_file and today_file and calculate:
 
                 def check(a, low, high):
                     if low is None or high is None:
-                        return "NA"
+                        return ""
                     return "✅" if min(low, high) <= a <= max(low, high) else "❌"
 
                 result.append([
@@ -153,7 +159,30 @@ if yesterday_file and today_file and calculate:
                 "CE ✔","PE ✔"
             ])
 
-            st.dataframe(res_df, use_container_width=True)
+            # -------- CLEAN --------
+            res_df = res_df.sort_values(by="Strike").reset_index(drop=True)
+            res_df = res_df.fillna("")
+
+            # -------- COLOR --------
+            def highlight(row):
+                styles = [""] * len(row)
+
+                if row["CE ✔"] == "✅":
+                    styles[6] = "background-color:#d4edda;color:black"
+                elif row["CE ✔"] == "❌":
+                    styles[6] = "background-color:#f8d7da;color:black"
+
+                if row["PE ✔"] == "✅":
+                    styles[7] = "background-color:#d4edda;color:black"
+                elif row["PE ✔"] == "❌":
+                    styles[7] = "background-color:#f8d7da;color:black"
+
+                return styles
+
+            st.dataframe(
+                res_df.style.apply(highlight, axis=1),
+                use_container_width=True
+            )
 
     except Exception as e:
         st.error(f"Error: {e}")
