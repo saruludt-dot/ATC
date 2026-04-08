@@ -231,78 +231,54 @@ if uploaded_file and calculate:
     <th>Put</th>
     </tr>
     """
-    # 🎯 FULL RANGE (ATM ±12) — PERFECT SEE-SAW ALIGNMENT
+    # ✅ SAFE GUARD (VERY IMPORTANT)
+    if 'atm_strike' in locals() and 'mapping_df' in locals() and not mapping_df.empty:
 
-    asc_df = mapping_df.sort_values(by="Strike").reset_index(drop=True)
+        asc_df = mapping_df.sort_values(by="Strike").reset_index(drop=True)
 
-    # Find ATM index
-    atm_index = None
-    for i, r in enumerate(asc_df.to_dict("records")):
-        if int(r["Strike"]) == int(atm_strike):
-            atm_index = i
-            break
+        # Find ATM index safely
+        atm_index = None
+        for i, r in enumerate(asc_df.to_dict("records")):
+            if int(r["Strike"]) == int(atm_strike):
+                atm_index = i
+                break
 
-    if atm_index is not None:
+        if atm_index is not None:
 
-        above = st.session_state.get("above", 14)
-        below = st.session_state.get("below", 14)
+            above = st.session_state.get("above", 14)
+            below = st.session_state.get("below", 14)
 
-        start = max(0, atm_index - below)
-        end = min(len(asc_df), atm_index + above + 1)
+            start = max(0, atm_index - below)
+            end = min(len(asc_df), atm_index + above + 1)
 
-        asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
+            asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
 
-        for i in range(len(asc_slice)):
+            for i in range(len(asc_slice)):
 
-            # RIGHT SIDE (PUT → ASCENDING ✅)
-            right_strike = int(asc_slice.iloc[i]["Strike"])
-            right_put = asc_slice.iloc[i]["Call"]
+                # RIGHT SIDE (PUT)
+                right_strike = int(asc_slice.iloc[i]["Strike"])
+                right_put = asc_slice.iloc[i]["Call"]
 
-            # LEFT SIDE (CALL → DESCENDING ✅)
-            left_row = asc_slice.iloc[len(asc_slice) - 1 - i]
-            left_strike = int(left_row["Strike"])
-            left_call = left_row["Put"]
+                # LEFT SIDE (CALL)
+                left_row = asc_slice.iloc[len(asc_slice) - 1 - i]
+                left_strike = int(left_row["Strike"])
+                left_call = left_row["Put"]
 
-            # 🎯 LABEL LOGIC
-            # LEFT SIDE (CALL) → KEEP ORIGINAL
-            def get_left_label(s):
-                if s == int(atm_strike):
-                    return "2nd Point: "
-                elif s == int(atm_strike + 100):
-                    return "3rd Point: "
-                elif s == int(atm_strike - 100):
-                    return "1st Point: "
-                return ""
+                left_label = get_left_label(left_strike)
+                right_label = get_right_label(right_strike)
 
+                # COLOR LOGIC (keep your existing)
+                bg_color = "#111827"
+                text_color = "white"
 
-            # RIGHT SIDE (PUT) → SWAPPED
-            def get_right_label(s):
-                if s == int(atm_strike):
-                    return "2nd Point: "
-                elif s == int(atm_strike + 100):
-                    return "1st Point: "   # swapped only here
-                elif s == int(atm_strike - 100):
-                    return "3rd Point: "   # swapped only here
-                return ""
+                if (left_strike == int(atm_strike) or right_strike == int(atm_strike)):
+                    bg_color = "#fff3cd"; text_color = "black"
+                elif (left_strike == int(atm_strike + 100) or right_strike == int(atm_strike + 100)):
+                    bg_color = "#d4edda"; text_color = "black"
+                elif (left_strike == int(atm_strike - 100) or right_strike == int(atm_strike - 100)):
+                    bg_color = "#f8d7da"; text_color = "black"
 
-            left_label = get_left_label(left_strike)    # CALL side unchanged
-            right_label = get_right_label(right_strike) # PUT side swapped
-
-            # 🎨 COLOR LOGIC
-            bg_color = "#111827"
-            text_color = "white"
-
-            if (left_strike == int(atm_strike) or right_strike == int(atm_strike)):
-                bg_color = "#fff3cd"
-                text_color = "black"
-            elif (left_strike == int(atm_strike + 100) or right_strike == int(atm_strike + 100)):
-                bg_color = "#d4edda"
-                text_color = "black"
-            elif (left_strike == int(atm_strike - 100) or right_strike == int(atm_strike - 100)):
-                bg_color = "#f8d7da"
-                text_color = "black"
-
-            html += f"""
+                html += f"""
     <tr style="background-color:{bg_color}; color:{text_color}; font-weight:bold;">
         <td>{left_label}{left_strike}</td>
         <td>{left_call:.2f}</td>
@@ -310,8 +286,6 @@ if uploaded_file and calculate:
         <td>{right_put:.2f}</td>
     </tr>
     """
-            
-    html += "</table></div>"
 
     # -------- TAB 2 --------
     with tab2:
