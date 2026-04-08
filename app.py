@@ -481,143 +481,18 @@ if uploaded_file and calculate:
         with col2:
            today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today")
 
-        if backup_file and today_file:
+        if backup_file:
 
             try:
-                # -------- READ FILES --------
                 backup_df = pd.read_csv(backup_file)
-                today_df = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
 
-                # -------- CLEAN BACKUP --------
-                backup_df.columns = backup_df.columns.str.strip()
-
-                # REMOVE index column if exists
-                if "Unnamed: 0" in backup_df.columns:
-                    backup_df = backup_df.drop(columns=["Unnamed: 0"])
-
-                # AUTO DETECT
-                strike_col = [c for c in backup_df.columns if "strike" in c.lower()]
-                avg_col = [c for c in backup_df.columns if "avg" in c.lower()]
-
-                if not strike_col or not avg_col:
-                    st.error("❌ Backup file must contain Strike & Average")
-                    st.stop()
-
-                strike_col = strike_col[0]
-                avg_col = avg_col[0]
-
-                backup_df["Strike"] = pd.to_numeric(backup_df[strike_col], errors="coerce")
-                backup_df["Average"] = pd.to_numeric(backup_df[avg_col], errors="coerce")
-
-                backup_df = backup_df.dropna(subset=["Strike", "Average"])
-                backup_df["Strike"] = backup_df["Strike"].astype(int)
-
-                # -------- CLEAN TODAY --------
-                today_df.columns = today_df.columns.str.strip()
-
-                # -------- FILTER BY EXPIRY --------
-                expiry_str = expiry_input.strftime("%d-%b-%Y")
-
-                today_df["Expiry Date"] = today_df["Expiry Date"].astype(str).str.strip()
-
-                today_df = today_df[today_df["Expiry Date"] == expiry_str]
-
-                # Safety check
-                if today_df.empty:
-                    st.error("❌ No data found for selected expiry")
-                    st.stop()
-                    
-                today_df["Option Type"] = today_df["Option Type"].astype(str).str.strip().str.upper()
-                today_df["Strike Price"] = pd.to_numeric(today_df["Strike Price"], errors="coerce")
-
-                today_df["High Price"] = pd.to_numeric(today_df["High Price"], errors="coerce")
-                today_df["Low Price"] = pd.to_numeric(today_df["Low Price"], errors="coerce")
-
-                # -------- BUILD RESULT --------
-                result = []
-
-                for _, row in backup_df.iterrows():
-
-                    strike = row["Strike"]
-                    avg = row["Average"]
-
-                    # Skip bad data
-                    if pd.isna(strike) or pd.isna(avg):
-                        continue
-
-                    ce = today_df[
-                        (today_df["Option Type"] == "CE") &
-                        (today_df["Strike Price"] == strike)
-                    ]
-
-                    pe = today_df[
-                        (today_df["Option Type"] == "PE") &
-                        (today_df["Strike Price"] == strike)
-                    ]
-
-                    ce_low = ce_high = pe_low = pe_high = None
-
-                    if not ce.empty:
-                        ce_low = ce.iloc[0]["Low Price"]
-                        ce_high = ce.iloc[0]["High Price"]
-
-                    if not pe.empty:
-                        pe_low = pe.iloc[0]["Low Price"]
-                        pe_high = pe.iloc[0]["High Price"]
-
-                    # -------- SAFE CHECK --------
-                    def check(avg, low, high):
-                        try:
-                            if pd.isna(avg) or pd.isna(low) or pd.isna(high):
-                                return "NA"
-                            if min(low, high) <= avg <= max(low, high):
-                                return "✅ Completed"
-                            return "❌ Not Completed"
-                        except:
-                            return "NA"
-
-                    ce_status = check(avg, ce_low, ce_high)
-                    pe_status = check(avg, pe_low, pe_high)
-
-                    result.append([
-                        int(strike),
-                        round(avg, 2),
-                        ce_low, pe_low,
-                        ce_high, pe_high,
-                        ce_status, pe_status
-                    ])
-
-                if len(result) == 0:
-                    st.warning("⚠️ No matching strikes found")
-                    st.stop()
-
-                result_df = pd.DataFrame(result, columns=[
-                    "Strike", "Avg (Backup)",
-                    "CE Low", "PE Low",
-                    "CE High", "PE High",
-                    "CE Status", "PE Status"
-                ])
-
-                # -------- STYLE --------
-                def highlight(row):
-                    styles = [""] * len(row)
-
-                    if "Completed" in row["CE Status"]:
-                        styles[6] = "background-color:#d4edda;color:black"
-                    else:
-                        styles[6] = "background-color:#f8d7da;color:black"
-
-                    if "Completed" in row["PE Status"]:
-                        styles[7] = "background-color:#d4edda;color:black"
-                    else:
-                        styles[7] = "background-color:#f8d7da;color:black"
-
-                    return styles
-
-                st.dataframe(result_df.style.apply(highlight, axis=1), use_container_width=True)
+                st.write("✅ Backup file loaded")
+                st.write("Columns:", backup_df.columns.tolist())
+                st.write(backup_df.head())
 
             except Exception as e:
-                st.error(f"🔥 Error: {e}")
+                st.error(f"❌ Backup file error: {e}")
+                st.stop()
     
 
     # -------- VARIATIONS --------
