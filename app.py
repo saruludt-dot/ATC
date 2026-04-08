@@ -44,10 +44,9 @@ with col_logo:
     st.markdown(f"<img src='data:image/png;base64,{logo}' width='300%'>", unsafe_allow_html=True)
 
 # -------- TABS --------
-with col_tabs:
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations" 
-    ])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Completion Check", "📊 Variations" 
+])
 
 # -------- INPUT --------
 with tab1:
@@ -465,6 +464,114 @@ if uploaded_file and calculate:
 
                 with col2:
                     st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
+
+    # -------- TAB 6 : COMPLETION CHECK --------
+    with tab6:
+
+        st.subheader("📊 Completion Check (Backup vs Today)")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            backup_file = st.file_uploader("Upload Backup CSV (Day 1 Avg)", key="backup")
+
+        with col2:
+            today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today")
+
+        if backup_file and today_file:
+
+            # -------- READ FILES --------
+            backup_df = pd.read_csv(backup_file)
+            today_df = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
+
+            # -------- CLEAN TODAY DATA --------
+            today_df.columns = today_df.columns.str.strip()
+            today_df["Option Type"] = today_df["Option Type"].str.strip().str.upper()
+            today_df["Strike Price"] = today_df["Strike Price"].astype(str).str.replace(",", "").astype(float)
+
+            today_df["High Price"] = pd.to_numeric(today_df["High Price"], errors="coerce")
+            today_df["Low Price"] = pd.to_numeric(today_df["Low Price"], errors="coerce")
+
+            # -------- PREP BACKUP --------
+            backup_df.columns = backup_df.columns.str.strip()
+
+            # Expected: Strike | Average
+            backup_df["Strike"] = backup_df["Strike"].astype(int)
+            backup_df["Average"] = pd.to_numeric(backup_df["Average"], errors="coerce")
+
+            # -------- BUILD RESULT --------
+            result = []
+
+            for _, row in backup_df.iterrows():
+
+                strike = row["Strike"]
+                avg = row["Average"]
+
+                # --- CE DATA ---
+                ce_row = today_df[
+                    (today_df["Option Type"] == "CE") &
+                    (today_df["Strike Price"] == strike)
+                ]
+
+                # --- PE DATA ---
+                pe_row = today_df[
+                    (today_df["Option Type"] == "PE") &
+                    (today_df["Strike Price"] == strike)
+                ]
+
+                ce_low = ce_high = pe_low = pe_high = None
+
+                if not ce_row.empty:
+                    ce_low = ce_row.iloc[0]["Low Price"]
+                    ce_high = ce_row.iloc[0]["High Price"]
+
+                if not pe_row.empty:
+                    pe_low = pe_row.iloc[0]["Low Price"]
+                    pe_high = pe_row.iloc[0]["High Price"]
+
+                # -------- STATUS CHECK --------
+                def check_status(avg, low, high):
+                    if low is None or high is None or avg is None:
+                        return "NA"
+                    if min(low, high) <= avg <= max(low, high):
+                        return "✅ Completed"
+                    return "❌ Not Completed"
+
+                ce_status = check_status(avg, ce_low, ce_high)
+                pe_status = check_status(avg, pe_low, pe_high)
+
+                result.append([
+                    int(strike),
+                    round(avg, 2),
+                    ce_low, pe_low,
+                    ce_high, pe_high,
+                    ce_status, pe_status
+                ])
+
+            result_df = pd.DataFrame(result, columns=[
+                "Strike", "Avg (Backup)",
+                "CE Low", "PE Low",
+                "CE High", "PE High",
+                "CE Status", "PE Status"
+            ])
+
+            # -------- STYLE --------
+            def highlight(row):
+
+                ce_color = "background-color: #d4edda; color:black" if "Completed" in row["CE Status"] else "background-color: #f8d7da; color:black"
+                pe_color = "background-color: #d4edda; color:black" if "Completed" in row["PE Status"] else "background-color: #f8d7da; color:black"
+
+                styles = [""] * len(row)
+
+                styles[6] = ce_color
+                styles[7] = pe_color
+
+                return styles
+
+            st.dataframe(
+                result_df.style.apply(highlight, axis=1),
+                use_container_width=True
+            )
     
 
     # -------- VARIATIONS --------
