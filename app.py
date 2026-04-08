@@ -482,6 +482,12 @@ if uploaded_file and calculate:
 
             # -------- READ FILES --------
             backup_df = pd.read_csv(backup_file)
+
+            # Remove unwanted index column if exists
+            if "Unnamed: 0" in backup_df.columns:
+                backup_df = backup_df.drop(columns=["Unnamed: 0"])
+
+            backup_df.columns = backup_df.columns.str.strip()
             today_df = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
 
             # -------- CLEAN TODAY DATA --------
