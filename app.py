@@ -177,6 +177,16 @@ if uploaded_file and calculate:
 
     mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
 
+    # ✅ DEFAULT RANGE (GLOBAL)
+    if "above" not in st.session_state:
+        st.session_state.above = 14
+
+    if "below" not in st.session_state:
+        st.session_state.below = 14
+
+    above = st.session_state.above
+    below = st.session_state.below
+
     # -------- BUILD HTML TABLE --------
 
     html = """
