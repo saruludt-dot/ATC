@@ -251,17 +251,29 @@ if uploaded_file and calculate:
             left_call = left_row["Put"]
 
             # 🎯 LABEL LOGIC
-            def get_label(s):
+            # LEFT SIDE (CALL) → KEEP ORIGINAL
+            def get_left_label(s):
                 if s == int(atm_strike):
                     return "2nd Point: "
                 elif s == int(atm_strike + 100):
-                    return "1st Point: "
-                elif s == int(atm_strike - 100):
                     return "3rd Point: "
+                elif s == int(atm_strike - 100):
+                    return "1st Point: "
                 return ""
 
-            left_label = get_label(left_strike)
-            right_label = get_label(right_strike)
+
+            # RIGHT SIDE (PUT) → SWAPPED
+            def get_right_label(s):
+                if s == int(atm_strike):
+                    return "2nd Point: "
+                elif s == int(atm_strike + 100):
+                    return "1st Point: "   # swapped only here
+                elif s == int(atm_strike - 100):
+                    return "3rd Point: "   # swapped only here
+                return ""
+
+            left_label = get_left_label(left_strike)    # CALL side unchanged
+            right_label = get_right_label(right_strike) # PUT side swapped
 
             # 🎨 COLOR LOGIC
             bg_color = "#111827"
