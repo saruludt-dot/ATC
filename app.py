@@ -476,108 +476,133 @@ if uploaded_file and calculate:
             backup_file = st.file_uploader("Upload Backup CSV (Day 1 Avg)", key="backup")
 
         with col2:
-            today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today")
+           today_file = st.file_uploader("Upload Today CSV (Day 2)", key="today")
 
         if backup_file and today_file:
 
-            # -------- READ FILES --------
-            backup_df = pd.read_csv(backup_file)
+            try:
+                # -------- READ FILES --------
+                backup_df = pd.read_csv(backup_file)
+                today_df = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
 
-            # Remove unwanted index column if exists
-            if "Unnamed: 0" in backup_df.columns:
-                backup_df = backup_df.drop(columns=["Unnamed: 0"])
+                # -------- CLEAN BACKUP --------
+                backup_df.columns = backup_df.columns.str.strip()
 
-            backup_df.columns = backup_df.columns.str.strip()
-            today_df = pd.read_csv(today_file, on_bad_lines='skip', engine='python')
+                # REMOVE index column if exists
+                if "Unnamed: 0" in backup_df.columns:
+                    backup_df = backup_df.drop(columns=["Unnamed: 0"])
 
-            # -------- CLEAN TODAY DATA --------
-            today_df.columns = today_df.columns.str.strip()
-            today_df["Option Type"] = today_df["Option Type"].str.strip().str.upper()
-            today_df["Strike Price"] = today_df["Strike Price"].astype(str).str.replace(",", "").astype(float)
+                # AUTO DETECT
+                strike_col = [c for c in backup_df.columns if "strike" in c.lower()]
+                avg_col = [c for c in backup_df.columns if "avg" in c.lower()]
 
-            today_df["High Price"] = pd.to_numeric(today_df["High Price"], errors="coerce")
-            today_df["Low Price"] = pd.to_numeric(today_df["Low Price"], errors="coerce")
+                if not strike_col or not avg_col:
+                    st.error("❌ Backup file must contain Strike & Average")
+                    st.stop()
 
-            # -------- PREP BACKUP --------
-            backup_df.columns = backup_df.columns.str.strip()
+                strike_col = strike_col[0]
+                avg_col = avg_col[0]
 
-            # Expected: Strike | Average
-            backup_df["Strike"] = backup_df["Strike"].astype(int)
-            backup_df["Average"] = pd.to_numeric(backup_df["Average"], errors="coerce")
+                backup_df["Strike"] = pd.to_numeric(backup_df[strike_col], errors="coerce")
+                backup_df["Average"] = pd.to_numeric(backup_df[avg_col], errors="coerce")
 
-            # -------- BUILD RESULT --------
-            result = []
+                backup_df = backup_df.dropna(subset=["Strike", "Average"])
+                backup_df["Strike"] = backup_df["Strike"].astype(int)
 
-            for _, row in backup_df.iterrows():
+                # -------- CLEAN TODAY --------
+                today_df.columns = today_df.columns.str.strip()
 
-                strike = row["Strike"]
-                avg = row["Average"]
+                today_df["Option Type"] = today_df["Option Type"].astype(str).str.strip().str.upper()
+                today_df["Strike Price"] = pd.to_numeric(today_df["Strike Price"], errors="coerce")
 
-                # --- CE DATA ---
-                ce_row = today_df[
-                    (today_df["Option Type"] == "CE") &
-                    (today_df["Strike Price"] == strike)
-                ]
+                today_df["High Price"] = pd.to_numeric(today_df["High Price"], errors="coerce")
+                today_df["Low Price"] = pd.to_numeric(today_df["Low Price"], errors="coerce")
 
-                # --- PE DATA ---
-                pe_row = today_df[
-                    (today_df["Option Type"] == "PE") &
-                    (today_df["Strike Price"] == strike)
-                ]
+                # -------- BUILD RESULT --------
+                result = []
 
-                ce_low = ce_high = pe_low = pe_high = None
+                for _, row in backup_df.iterrows():
 
-                if not ce_row.empty:
-                    ce_low = ce_row.iloc[0]["Low Price"]
-                    ce_high = ce_row.iloc[0]["High Price"]
+                    strike = row["Strike"]
+                    avg = row["Average"]
 
-                if not pe_row.empty:
-                    pe_low = pe_row.iloc[0]["Low Price"]
-                    pe_high = pe_row.iloc[0]["High Price"]
+                    # Skip bad data
+                    if pd.isna(strike) or pd.isna(avg):
+                        continue
 
-                # -------- STATUS CHECK --------
-                def check_status(avg, low, high):
-                    if low is None or high is None or avg is None:
-                        return "NA"
-                    if min(low, high) <= avg <= max(low, high):
-                        return "✅ Completed"
-                    return "❌ Not Completed"
+                    ce = today_df[
+                        (today_df["Option Type"] == "CE") &
+                        (today_df["Strike Price"] == strike)
+                    ]
 
-                ce_status = check_status(avg, ce_low, ce_high)
-                pe_status = check_status(avg, pe_low, pe_high)
+                    pe = today_df[
+                        (today_df["Option Type"] == "PE") &
+                        (today_df["Strike Price"] == strike)
+                    ]
 
-                result.append([
-                    int(strike),
-                    round(avg, 2),
-                    ce_low, pe_low,
-                    ce_high, pe_high,
-                    ce_status, pe_status
+                    ce_low = ce_high = pe_low = pe_high = None
+
+                    if not ce.empty:
+                        ce_low = ce.iloc[0]["Low Price"]
+                        ce_high = ce.iloc[0]["High Price"]
+
+                    if not pe.empty:
+                        pe_low = pe.iloc[0]["Low Price"]
+                        pe_high = pe.iloc[0]["High Price"]
+
+                    # -------- SAFE CHECK --------
+                    def check(avg, low, high):
+                        try:
+                            if pd.isna(avg) or pd.isna(low) or pd.isna(high):
+                                return "NA"
+                            if min(low, high) <= avg <= max(low, high):
+                                return "✅ Completed"
+                            return "❌ Not Completed"
+                        except:
+                            return "NA"
+
+                    ce_status = check(avg, ce_low, ce_high)
+                    pe_status = check(avg, pe_low, pe_high)
+
+                    result.append([
+                        int(strike),
+                        round(avg, 2),
+                        ce_low, pe_low,
+                        ce_high, pe_high,
+                        ce_status, pe_status
+                    ])
+
+                if len(result) == 0:
+                    st.warning("⚠️ No matching strikes found")
+                    st.stop()
+
+                result_df = pd.DataFrame(result, columns=[
+                    "Strike", "Avg (Backup)",
+                    "CE Low", "PE Low",
+                    "CE High", "PE High",
+                    "CE Status", "PE Status"
                 ])
 
-            result_df = pd.DataFrame(result, columns=[
-                "Strike", "Avg (Backup)",
-                "CE Low", "PE Low",
-                "CE High", "PE High",
-                "CE Status", "PE Status"
-            ])
+                # -------- STYLE --------
+                def highlight(row):
+                    styles = [""] * len(row)
 
-            # -------- STYLE --------
-            def highlight(row):
+                    if "Completed" in row["CE Status"]:
+                        styles[6] = "background-color:#d4edda;color:black"
+                    else:
+                        styles[6] = "background-color:#f8d7da;color:black"
 
-                ce_color = "background-color: #d4edda; color:black" if "Completed" in row["CE Status"] else "background-color: #f8d7da; color:black"
-                pe_color = "background-color: #d4edda; color:black" if "Completed" in row["PE Status"] else "background-color: #f8d7da; color:black"
+                    if "Completed" in row["PE Status"]:
+                        styles[7] = "background-color:#d4edda;color:black"
+                    else:
+                        styles[7] = "background-color:#f8d7da;color:black"
 
-                styles = [""] * len(row)
+                    return styles
 
-                styles[6] = ce_color
-                styles[7] = pe_color
+                st.dataframe(result_df.style.apply(highlight, axis=1), use_container_width=True)
 
-                return styles
-
-            st.dataframe(
-                result_df.style.apply(highlight, axis=1),
-                use_container_width=True
-            )
+            except Exception as e:
+                st.error(f"🔥 Error: {e}")
     
 
     # -------- VARIATIONS --------
