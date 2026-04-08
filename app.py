@@ -256,8 +256,8 @@ if uploaded_file and calculate:
             above = st.session_state.get("above", 14)
             below = st.session_state.get("below", 14)
 
-            start = max(0, atm_index - 14)
-            end = min(len(asc_df), atm_index + 15)
+            start = max(0, atm_index - 20)
+            end = min(len(asc_df), atm_index + 21)
 
             asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
 
