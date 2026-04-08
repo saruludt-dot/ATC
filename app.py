@@ -234,8 +234,8 @@ if uploaded_file and calculate:
 
     if atm_index is not None:
 
-        start = max(0, atm_index - 14)
-        end = min(len(asc_df), atm_index + 15)
+        start = max(0, atm_index - below)
+        end = min(len(asc_df), atm_index + above + 1)
 
         asc_slice = asc_df.iloc[start:end].reset_index(drop=True)
 
@@ -349,6 +349,29 @@ if uploaded_file and calculate:
         if uploaded_file and calculate:
 
             st.subheader("🔄 See-Saw Calculation")
+
+            # 🔽 CUSTOM RANGE INPUT
+            st.subheader("⚙️ Custom Strike Range")
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                above = st.number_input("Above ATM", min_value=1, max_value=50, value=14)
+
+            with col2:
+                below = st.number_input("Below ATM", min_value=1, max_value=50, value=14)
+
+            with col3:
+                submit_range = st.button("Apply Range")
+
+            # STORE VALUES
+            if submit_range:
+                st.session_state.above = above
+                st.session_state.below = below
+
+            # DEFAULT VALUES
+            above = st.session_state.get("above", 14)
+            below = st.session_state.get("below", 14)
 
             # ✅ DISPLAY TABLE
             components.html(html, height=600, scrolling=True)
