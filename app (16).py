@@ -348,69 +348,69 @@ if yesterday_file and today_file and calculate:
 
                 st.dataframe(avg_df.style.apply(highlight_atm, axis=1), use_container_width=True)
 
-st.subheader("✅ Completion Check (Yesterday Avg vs Today Range)")
+                st.subheader("✅ Completion Check (Yesterday Avg vs Today Range)")
 
-# -------- PREP TODAY DF --------
-df_t.columns = df_t.columns.str.strip()
-df_t["Option Type"] = df_t["Option Type"].str.strip().str.upper()
-df_t["Strike Price"] = df_t["Strike Price"].astype(str).str.replace(",", "").astype(float)
+                # -------- PREP TODAY DF --------
+                df_t.columns = df_t.columns.str.strip()
+                df_t["Option Type"] = df_t["Option Type"].str.strip().str.upper()
+                df_t["Strike Price"] = df_t["Strike Price"].astype(str).str.replace(",", "").astype(float)
 
-df_t["High Price"] = pd.to_numeric(df_t["High Price"], errors="coerce")
-df_t["Low Price"] = pd.to_numeric(df_t["Low Price"], errors="coerce")
+                df_t["High Price"] = pd.to_numeric(df_t["High Price"], errors="coerce")
+                df_t["Low Price"] = pd.to_numeric(df_t["Low Price"], errors="coerce")
 
-df_t["Expiry Date"] = df_t["Expiry Date"].astype(str).str.strip()
-df_t = df_t[df_t["Expiry Date"] == expiry_str]
+                df_t["Expiry Date"] = df_t["Expiry Date"].astype(str).str.strip()
+                df_t = df_t[df_t["Expiry Date"] == expiry_str]
 
-result = []
+                result = []
 
-for _, row in avg_df.iterrows():
+                for _, row in avg_df.iterrows():
 
-    strike_val = int(row["Strike"])
-    avg_val = float(row["Average"])
+                    strike_val = int(row["Strike"])
+                    avg_val = float(row["Average"])
 
-    ce_row = df_t[
-        (df_t["Option Type"]=="CE") &
-        (df_t["Strike Price"]==strike_val)
-    ]
+                    ce_row = df_t[
+                        (df_t["Option Type"]=="CE") &
+                        (df_t["Strike Price"]==strike_val)
+                    ]
 
-    pe_row = df_t[
-        (df_t["Option Type"]=="PE") &
-        (df_t["Strike Price"]==strike_val)
-    ]
+                    pe_row = df_t[
+                        (df_t["Option Type"]=="PE") &
+                        (df_t["Strike Price"]==strike_val)
+                    ]
 
-    ce_low = ce_high = pe_low = pe_high = None
+                    ce_low = ce_high = pe_low = pe_high = None
 
-    if not ce_row.empty:
-        ce_low = ce_row.iloc[0]["Low Price"]
-        ce_high = ce_row.iloc[0]["High Price"]
+                    if not ce_row.empty:
+                        ce_low = ce_row.iloc[0]["Low Price"]
+                        ce_high = ce_row.iloc[0]["High Price"]
 
-    if not pe_row.empty:
-        pe_low = pe_row.iloc[0]["Low Price"]
-        pe_high = pe_row.iloc[0]["High Price"]
+                    if not pe_row.empty:
+                        pe_low = pe_row.iloc[0]["Low Price"]
+                        pe_high = pe_row.iloc[0]["High Price"]
 
-    def check(avg, low, high):
-        if low is None or high is None:
-            return "NA"
-        if min(low, high) <= avg <= max(low, high):
-            return "✅"
-        return "❌"
+                    def check(avg, low, high):
+                        if low is None or high is None:
+                            return "NA"
+                        if min(low, high) <= avg <= max(low, high):
+                            return "✅"
+                        return "❌"
 
-    result.append([
-        strike_val, avg_val,
-        ce_low, ce_high,
-        pe_low, pe_high,
-        check(avg_val, ce_low, ce_high),
-        check(avg_val, pe_low, pe_high)
-    ])
+                    result.append([
+                        strike_val, avg_val,
+                        ce_low, ce_high,
+                        pe_low, pe_high,
+                        check(avg_val, ce_low, ce_high),
+                        check(avg_val, pe_low, pe_high)
+                    ])
 
-result_df = pd.DataFrame(result, columns=[
-    "Strike","Avg",
-    "CE Low","CE High",
-    "PE Low","PE High",
-    "CE ✔","PE ✔"
-])
+                result_df = pd.DataFrame(result, columns=[
+                    "Strike","Avg",
+                    "CE Low","CE High",
+                    "PE Low","PE High",
+                    "CE ✔","PE ✔"
+                ])
 
-st.dataframe(result_df, use_container_width=True)
+                st.dataframe(result_df, use_container_width=True)
     # ----------- TAB 3 : SEE-SAW + RESULTS -----------
     with tab4:
 
