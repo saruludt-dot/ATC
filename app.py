@@ -244,6 +244,9 @@ if uploaded_file and calculate:
 
     if atm_index is not None:
 
+        above = st.session_state.get("above", 14)
+        below = st.session_state.get("below", 14)
+
         start = max(0, atm_index - below)
         end = min(len(asc_df), atm_index + above + 1)
 
@@ -363,25 +366,14 @@ if uploaded_file and calculate:
             # 🔽 CUSTOM RANGE INPUT
             st.subheader("⚙️ Custom Strike Range")
 
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
 
-            with col1:
-                above = st.number_input("Above ATM", min_value=1, max_value=50, value=14)
+            above = col1.number_input("Above ATM", min_value=1, max_value=50, value=st.session_state.get("above", 14))
+            below = col2.number_input("Below ATM", min_value=1, max_value=50, value=st.session_state.get("below", 14))
 
-            with col2:
-                below = st.number_input("Below ATM", min_value=1, max_value=50, value=14)
-
-            with col3:
-                submit_range = st.button("Apply Range")
-
-            # STORE VALUES
-            if submit_range:
-                st.session_state.above = above
-                st.session_state.below = below
-
-            # DEFAULT VALUES
-            above = st.session_state.get("above", 14)
-            below = st.session_state.get("below", 14)
+            # ✅ ALWAYS STORE (no button needed)
+            st.session_state.above = above
+            st.session_state.below = below
 
             # ✅ DISPLAY TABLE
             components.html(html, height=600, scrolling=True)
