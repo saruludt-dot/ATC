@@ -18,7 +18,7 @@ st.sidebar.markdown(
 )
 
 page = st.sidebar.radio("Choose", ["📊 Strikes Sold", "📈 Calculations"])
-if page == "📊 Calculations":
+if page == "📊 Strikes Sold":
 
     #st.title("📊 Options Value Tracker")
 
@@ -146,7 +146,7 @@ if page == "📊 Calculations":
 
         st.dataframe(result_df, use_container_width=True)
 
-elif page == "📈 Strikes Sold":
+elif page == "📈 Calculations":
 
     st.title("📈 Dashboard")
 
