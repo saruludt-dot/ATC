@@ -6,7 +6,7 @@ import streamlit as st
 
 # Sidebar menu
 page = st.sidebar.selectbox("Choose", ["📊 Tracker", "📈 Dashboard"], index=0)
-if page == "Tracker":
+if page == "📊 Tracker":
 
     st.title("📊 Options Value Tracker")
 
@@ -134,7 +134,7 @@ if page == "Tracker":
 
         st.dataframe(result_df, use_container_width=True)
 
-elif page == "Dashboard":
+elif page == "📈 Dashboard":
 
     st.title("📈 Dashboard")
 
