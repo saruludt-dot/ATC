@@ -3,8 +3,20 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 import streamlit as st
+import base64
+
+def get_img(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
 
 # Sidebar menu
+logo = get_img("logo.png")
+
+st.sidebar.markdown(
+    f"<img src='data:image/png;base64,{logo}' width='100%'>",
+    unsafe_allow_html=True
+)
+
 page = st.sidebar.radio("Choose", ["📊 Tracker", "📈 Dashboard"])
 if page == "📊 Tracker":
 
@@ -163,20 +175,20 @@ elif page == "📈 Dashboard":
        # st.stop()
 
     # -------- LOGO LEFT --------
-    def get_img(path):
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
+    #def get_img(path):
+        #with open(path, "rb") as f:
+            #return base64.b64encode(f.read()).decode()
 
-    col_logo, col_tabs, col_logout = st.columns([2.5,6.25,1.25])
+    #col_logo, col_tabs, col_logout = st.columns([2.5,6.25,1.25])
 
-    with col_logout:
-        if st.button("Logout"):
-            st.session_state.logged_in = False
-            st.rerun()
+   # with col_logout:
+        #if st.button("Logout"):
+            #st.session_state.logged_in = False
+           # st.rerun()
 
-    with col_logo:
-        logo = get_img("logo.png")
-        st.markdown(f"<img src='data:image/png;base64,{logo}' width='300%'>", unsafe_allow_html=True)
+   # with col_logo:
+       # logo = get_img("logo.png")
+        #st.markdown(f"<img src='data:image/png;base64,{logo}' width='300%'>", unsafe_allow_html=True)
 
     # -------- TABS --------
     with col_tabs:
