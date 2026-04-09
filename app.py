@@ -191,10 +191,9 @@ elif page == "📈 Dashboard":
         #st.markdown(f"<img src='data:image/png;base64,{logo}' width='300%'>", unsafe_allow_html=True)
 
     # -------- TABS --------
-    with col_tabs:
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations" 
-        ])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations"
+    ])
 
     # -------- INPUT --------
     with tab1:
