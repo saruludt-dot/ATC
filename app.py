@@ -42,7 +42,7 @@ st.sidebar.markdown("### 📌 Navigation")
 
 page = st.sidebar.radio(
     "",
-    ["📊 Tracker", "📈 Dashboard"],
+    ["📊 Strikes Sold", "📈 Calculations"],
 )
 if page == "📊 Strikes Sold":
 
