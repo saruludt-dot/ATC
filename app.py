@@ -139,28 +139,28 @@ elif page == "📈 Dashboard":
     st.title("📈 Dashboard")
 
     # -------- LOGIN --------
-    def check_login():
-        if "logged_in" not in st.session_state:
-            st.session_state.logged_in = False
+    #def check_login():
+        #if "logged_in" not in st.session_state:
+            #st.session_state.logged_in = False
 
-        if not st.session_state.logged_in:
-            st.title("🔐 Login Required")
+        #if not st.session_state.logged_in:
+            #st.title("🔐 Login Required")
 
-            u = st.text_input("Username")
-            p = st.text_input("Password", type="password")
+            #u = st.text_input("Username")
+           # p = st.text_input("Password", type="password")
 
-            if st.button("Login"):
-                if u == "ATC" and p == "2015":
-                    st.session_state.logged_in = True
-                    st.rerun()
-                else:
-                    st.error("Invalid login")
+           # if st.button("Login"):
+               # if u == "ATC" and p == "2015":
+                    #st.session_state.logged_in = True
+                    #st.rerun()
+                #else:
+                    #st.error("Invalid login")
 
-            return False
-        return True
+           # return False
+       # return True
 
-    if not check_login():
-        st.stop()
+   # if not check_login():
+       # st.stop()
 
     # -------- LOGO LEFT --------
     def get_img(path):
