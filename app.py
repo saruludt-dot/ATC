@@ -8,7 +8,7 @@ import streamlit as st
 page = st.sidebar.selectbox("Choose", ["📊 Tracker", "📈 Dashboard"], index=0)
 if page == "📊 Tracker":
 
-    st.title("📊 Options Value Tracker")
+    #st.title("📊 Options Value Tracker")
 
     import streamlit as st
     import pandas as pd
