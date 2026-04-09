@@ -165,16 +165,34 @@ if page == "📊 Strikes Sold":
 
                 if pe_low <= value <= pe_high:
                     pe_status = "✅ Sold"
+            # =========================
+            # ✅ S/R CALCULATION
+            # =========================
+            S2 = S1 = R1 = R2 = None
 
+            if ce_status == "✅ Completed" and pe_status == "✅ Completed":
+
+                S2 = strike - (2 * value)
+                S1 = strike - value
+                R1 = strike + value
+                R2 = strike + (2 * value)
+                
             results.append({
                 "Strike": strike,
                 "Value to check": value,
+
                 "CE Low": ce_low,
                 "CE High": ce_high,
                 "PE Low": pe_low,
                 "PE High": pe_high,
+
                 "CE Status": ce_status,
-                "PE Status": pe_status
+                "PE Status": pe_status,
+
+                "S2": S2,
+                "S1": S1,
+                "R1": R1,
+                "R2": R2
             })
 
         # =========================
