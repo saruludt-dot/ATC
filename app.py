@@ -141,14 +141,14 @@ if page == "📊 Strikes Sold":
             ]
 
             ce_low = ce_high = None
-            ce_status = "❌ Not Completed"
+            ce_status = "❌ Not Sold"
 
             if not ce.empty:
                 ce_low = ce.iloc[0]["LOW"]
                 ce_high = ce.iloc[0]["HIGH"]
 
                 if ce_low <= value <= ce_high:
-                    ce_status = "✅ Completed"
+                    ce_status = "✅ Sold"
 
             # ---- PE ----
             pe = df_mw[
@@ -157,14 +157,14 @@ if page == "📊 Strikes Sold":
             ]
 
             pe_low = pe_high = None
-            pe_status = "❌ Not Completed"
+            pe_status = "❌ Not Sold"
 
             if not pe.empty:
                 pe_low = pe.iloc[0]["LOW"]
                 pe_high = pe.iloc[0]["HIGH"]
 
                 if pe_low <= value <= pe_high:
-                    pe_status = "✅ Completed"
+                    pe_status = "✅ Sold"
 
             results.append({
                 "Strike": strike,
