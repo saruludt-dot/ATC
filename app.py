@@ -131,8 +131,8 @@ if page == "📊 Strikes Sold":
 
         for _, row in df_input.iterrows():
 
-            strike = row["strike"]
-            value = row["value to check"]
+            strike = row["Strike"]
+            value = row["Average"]
 
             # ---- CE ----
             ce = df_mw[
