@@ -25,7 +25,7 @@ if page == "📊 Strikes Sold":
     import streamlit as st
     import pandas as pd
 
-    st.title("📊 Options Value Tracker")
+    st.title("📊 Strikes Sold Today")
 
     # Upload files
     input_file = st.file_uploader("Upload Values Excel", type=["xlsx"])
