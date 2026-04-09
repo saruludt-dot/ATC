@@ -22,13 +22,13 @@ st.sidebar.markdown("""
 <style>
 /* Reduce top padding of sidebar */
 section[data-testid="stSidebar"] > div {
-    padding-top: 1px;
+    padding-top: -5px;
 }
 
 /* Reduce space above Navigation title */
 section[data-testid="stSidebar"] h3 {
     margin-top: 0px;
-    margin-bottom: -10px;
+    margin-bottom: -20px;
 }
 
 /* Reduce radio spacing */
