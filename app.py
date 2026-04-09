@@ -18,6 +18,20 @@ st.sidebar.markdown(
 )
 
 st.sidebar.markdown("---")
+st.sidebar.markdown("""
+<style>
+/* Reduce gap below Navigation title */
+section[data-testid="stSidebar"] h3 {
+    margin-bottom: -10px;
+}
+
+/* Reduce radio spacing */
+div[data-testid="stRadio"] > div {
+    gap: 5px;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.sidebar.markdown("### 📌 Navigation")
 
 page = st.sidebar.radio(
