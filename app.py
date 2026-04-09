@@ -2,7 +2,10 @@ import streamlit as st
 import pandas as pd
 import base64
 import streamlit.components.v1 as components
+import streamlit as st
 
+# Sidebar menu
+page = st.sidebar.selectbox("Choose", ["Tracker", "Dashboard"])
 # -------- LOGIN --------
 def check_login():
     if "logged_in" not in st.session_state:
