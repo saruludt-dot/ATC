@@ -233,10 +233,17 @@ elif page == "📈 Calculations":
 
     # -------- INPUT --------
     with tab1:
-        uploaded_file = st.file_uploader("Upload CSV")
-        expiry = st.date_input("Expiry Date")
-        strike = st.number_input("Strike", step=50)
-        calculate = st.button("Calculate")
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            uploaded_file = st.file_uploader("📥 Upload CSV")
+
+        with col2:
+            expiry = st.date_input("📅 Expiry Date")
+
+        with col3:
+            strike = st.number_input("🎯 Strike", step=50)
+        calculate = st.button("🚀 Calculate", use_container_width=True)
 
     # -------- MAIN LOGIC --------
     if uploaded_file and calculate:
