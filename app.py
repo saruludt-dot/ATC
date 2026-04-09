@@ -17,12 +17,12 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-st.sidebar.markdown("---")
+#st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <style>
 /* Reduce top padding of sidebar */
 section[data-testid="stSidebar"] > div {
-    padding-top: -5px;
+    padding-top: -15px;
 }
 
 /* Reduce space above Navigation title */
