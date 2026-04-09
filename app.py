@@ -103,9 +103,16 @@ if page == "📊 Strikes Sold":
         )
 
         # Clean LOW / HIGH
-        df_mw["LOW"] = df_mw["LOW"].astype(str).str.replace(",", "").astype(float)
-        df_mw["HIGH"] = df_mw["HIGH"].astype(str).str.replace(",", "").astype(float)
+        df_mw["LOW"] = pd.to_numeric(
+            df_mw["LOW"].astype(str).str.replace(",", ""),
+            errors="coerce"
+        )
 
+        df_mw["HIGH"] = pd.to_numeric(
+            df_mw["HIGH"].astype(str).str.replace(",", ""),
+            errors="coerce"
+        )
+        df_mw = df_mw.dropna(subset=["LOW", "HIGH"])
         # Convert CALL/PUT → CE/PE
         df_mw["OPTION TYPE"] = df_mw["OPTION TYPE"].astype(str).str.strip().replace({
             "Call": "CE",
