@@ -179,7 +179,7 @@ if page == "📊 Strikes Sold":
                 
             results.append({
                 "Strike": strike,
-                "Value to check": value,
+                "Average": value,
 
                 "CE Low": ce_low,
                 "CE High": ce_high,
