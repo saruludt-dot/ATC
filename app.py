@@ -22,7 +22,7 @@ st.sidebar.markdown("""
 <style>
 /* Reduce top padding of sidebar */
 section[data-testid="stSidebar"] > div {
-    padding-top: 10px;
+    padding-top: 5px;
 }
 
 /* Reduce space above Navigation title */
