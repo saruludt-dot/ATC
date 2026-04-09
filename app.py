@@ -51,7 +51,12 @@ if page == "📊 Strikes Sold":
     import streamlit as st
     import pandas as pd
 
-    st.title("📊 Strikes Sold Today")
+    st.markdown("""
+    <div style='display:flex; align-items:center; gap:10px;'>
+        <h1 style='margin:0;'>📈 Strikes Sold Today</h1>
+    </div>
+    <hr style='margin-top:5px;'>
+""", unsafe_allow_html=True)
 
     # Upload files
     input_file = st.file_uploader("Upload Values Excel", type=["xlsx"])
