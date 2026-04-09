@@ -179,7 +179,12 @@ if page == "📊 Strikes Sold":
 
 elif page == "📈 Calculations":
 
-    st.title("📈 Dashboard")
+    st.markdown("""
+        <div style='display:flex; align-items:center; gap:10px;'>
+            <h1 style='margin:0;'>📈 Dashboard</h1>
+        </div>
+        <hr style='margin-top:5px;'>
+    """, unsafe_allow_html=True)
 
     # -------- LOGIN --------
     #def check_login():
