@@ -17,7 +17,13 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-page = st.sidebar.radio("Choose", ["📊 Strikes Sold", "📈 Calculations"])
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 📌 Navigation")
+
+page = st.sidebar.radio(
+    "",
+    ["📊 Tracker", "📈 Dashboard"],
+)
 if page == "📊 Strikes Sold":
 
     #st.title("📊 Options Value Tracker")
