@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 import streamlit as st
 
 # Sidebar menu
-page = st.sidebar.selectbox("Choose", ["📊 Tracker", "📈 Dashboard"], index=0)
+page = st.sidebar.radio("Choose", ["📊 Tracker", "📈 Dashboard"])
 if page == "📊 Tracker":
 
     #st.title("📊 Options Value Tracker")
