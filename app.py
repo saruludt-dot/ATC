@@ -170,7 +170,7 @@ if page == "📊 Strikes Sold":
             # =========================
             S2 = S1 = R1 = R2 = None
 
-            if ce_status == "✅ Completed" and pe_status == "✅ Completed":
+            if ce_status == "✅ Sold" and pe_status == "✅ Sold":
 
                 S2 = strike - (2 * value)
                 S1 = strike - value
