@@ -20,8 +20,14 @@ st.sidebar.markdown(
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <style>
-/* Reduce gap below Navigation title */
+/* Reduce top padding of sidebar */
+section[data-testid="stSidebar"] > div {
+    padding-top: 10px;
+}
+
+/* Reduce space above Navigation title */
 section[data-testid="stSidebar"] h3 {
+    margin-top: 0px;
     margin-bottom: -10px;
 }
 
