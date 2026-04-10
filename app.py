@@ -137,7 +137,7 @@ if page == "📊 Strikes Sold":
         st.warning("No matching data found. Check files.")
     else:
         result_df = pd.DataFrame(results)
-        result_df = result_df.sort_values(by="Strike")
+        result_df = result_df.sort_values(by="Strike").reset_index(drop=True)
         st.dataframe(result_df, use_container_width=True)
 
 # =====================================================
