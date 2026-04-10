@@ -26,7 +26,7 @@ div[data-testid="stRadio"] > div { gap: 5px; }
 
 st.sidebar.markdown("### 📌 Navigation")
 
-page = st.sidebar.radio("", ["📊 Strikes Sold", "📈 Calculations"])
+page = st.sidebar.radio("", ["📈 Calculations", "📊 Strikes Sold"])
 
 # =====================================================
 # ✅ STRIKES SOLD (NEW LOGIC - DIRECT)
