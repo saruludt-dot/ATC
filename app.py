@@ -152,46 +152,6 @@ elif page == "📈 Calculations":
         <hr style='margin-top:5px;'>
     """, unsafe_allow_html=True)
 
-    # -------- LOGIN --------
-    #def check_login():
-        #if "logged_in" not in st.session_state:
-            #st.session_state.logged_in = False
-
-        #if not st.session_state.logged_in:
-            #st.title("🔐 Login Required")
-
-            #u = st.text_input("Username")
-           # p = st.text_input("Password", type="password")
-
-           # if st.button("Login"):
-               # if u == "ATC" and p == "2015":
-                    #st.session_state.logged_in = True
-                    #st.rerun()
-                #else:
-                    #st.error("Invalid login")
-
-           # return False
-       # return True
-
-   # if not check_login():
-       # st.stop()
-
-    # -------- LOGO LEFT --------
-    #def get_img(path):
-        #with open(path, "rb") as f:
-            #return base64.b64encode(f.read()).decode()
-
-    #col_logo, col_tabs, col_logout = st.columns([2.5,6.25,1.25])
-
-   # with col_logout:
-        #if st.button("Logout"):
-            #st.session_state.logged_in = False
-           # st.rerun()
-
-   # with col_logo:
-       # logo = get_img("logo.png")
-        #st.markdown(f"<img src='data:image/png;base64,{logo}' width='300%'>", unsafe_allow_html=True)
-
     # -------- TABS --------
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations"
@@ -308,7 +268,6 @@ elif page == "📈 Calculations":
 
         # -------- SEE-SAW (HTML VERSION) --------
 
-        # ✅ LABEL FUNCTIONS (MOVE HERE)
         def get_left_label(s):
             if s == int(atm_strike):
                 return "2nd Point: "
@@ -716,13 +675,6 @@ elif page == "📈 Calculations":
                         ce_bg = ""
                         ce_text = "white"
 
-                    #if s == int(atm_strike):
-                        #ce_bg = "#fff3cd"; ce_text = "black"
-                    #elif s == int(atm_strike + 100):
-                        #ce_bg = "#d4edda"; ce_text = "black"
-                    #elif s == int(atm_strike - 100):
-                        #ce_bg = "#f8d7da"; ce_text = "black"
-
                         # CE DESCENDING CHECK
                         if prev_ce_high is not None and ce_high is not None:
                             if ce_high > prev_ce_high:
@@ -748,14 +700,7 @@ elif page == "📈 Calculations":
                         # ---------------- PE LOGIC ----------------
                         pe_bg = ""
                         pe_text = "white"
-
-                    #if s == int(atm_strike):
-                        #pe_bg = "#fff3cd"; pe_text = "black"
-                    #elif s == int(atm_strike + 100):
-                        #pe_bg = "#d4edda"; pe_text = "black"
-                    #elif s == int(atm_strike - 100):
-                        #pe_bg = "#f8d7da"; pe_text = "black"
-
+                   
                         # PE ASCENDING CHECK
                         if prev_pe_high is not None and pe_high is not None:
                             if pe_high < prev_pe_high:
@@ -789,7 +734,3 @@ elif page == "📈 Calculations":
 
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
-
-
-       # result_df = pd.DataFrame(rows, columns=["Strike","Average"])
-       # st.dataframe(result_df)
