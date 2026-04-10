@@ -45,31 +45,6 @@ page = st.sidebar.radio(
     ["📊 Strikes Sold", "📈 Calculations"],
 )
 if page == "📊 Strikes Sold":
-
-    import streamlit as st
-    import pandas as pd
-    import base64
-    import streamlit.components.v1 as components
-
-    st.markdown("""
-    <h1>📈 Strikes Sold Today</h1>
-    <hr>
-    """, unsafe_allow_html=True)
-
-    prev_file = st.file_uploader("Upload Previous Day File", type=["csv"])
-    mw_file = st.file_uploader("Upload Today MW File", type=["csv"])
-
-    if prev_file and mw_file:
-
-        # -------- PREVIOUS DAY --------
-        df_prev = pd.read_csv(prev_file, on_bad_lines='skip', engine='python')
-        df_prev.columns = df_prev.columns.str.strip()
-
-        df_prev["Strike Price"] = df_prev["Strike Price"].astype(str).str.replace(",", "").astype(float)
-        df_prev["Close Price"] = pd.to_numeric(df_prev["Close Price"], errors="coerce")
-        df_prev["Option Type"] = df_prev["Option Type"].str.strip().str.upper()
-
-        # -------- MW FILE --------
         df_mw = pd.read_csv(mw_file)
         df_mw.columns = df_mw.columns.str.strip().str.upper()
 
@@ -112,7 +87,51 @@ if page == "📊 Strikes Sold":
             if not ce.empty:
                 ce_low = ce.iloc[0]["LOW"]
                 ce_high = ce.iloc[0]["HIGH"]
-        st.dataframe(result_df, use_container_width=True)
+                if ce_low <= value <= ce_high:
+                    ce_status = "✅ Sold"
+
+            # ---- PE ----
+            pe = df_mw[(df_mw["OPTION TYPE"] == "PE") & (abs(df_mw["STRIKE"] - strike) < 1)]
+
+            pe_low = pe_high = None
+            pe_status = "❌ Not Sold"
+
+            if not pe.empty:
+                pe_low = pe.iloc[0]["LOW"]
+                pe_high = pe.iloc[0]["HIGH"]
+                if pe_low <= value <= pe_high:
+                    pe_status = "✅ Sold"
+
+            # ---- S/R ----
+            S2 = S1 = R1 = R2 = None
+
+            if ce_status == "✅ Sold" and pe_status == "✅ Sold":
+                S2 = strike - (2 * value)
+                S1 = strike - value
+                R1 = strike + value
+                R2 = strike + (2 * value)
+
+            results.append({
+                "Strike": strike,
+                "Average": round(value, 2),
+                "CE Low": ce_low,
+                "CE High": ce_high,
+                "PE Low": pe_low,
+                "PE High": pe_high,
+                "CE Status": ce_status,
+                "PE Status": pe_status,
+                "S2": S2,
+                "S1": S1,
+                "R1": R1,
+                "R2": R2
+            })
+
+        # Safely handle empty results
+        if len(results) == 0:
+            st.warning("No matching data found. Please check your files.")
+        else:
+            result_df = pd.DataFrame(results)
+            st.dataframe(result_df, use_container_width=True)
 
 elif page == "📈 Calculations":
 
