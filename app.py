@@ -45,41 +45,100 @@ page = st.sidebar.radio(
     ["📊 Strikes Sold", "📈 Calculations"],
 )
 if page == "📊 Strikes Sold":
+
+    #st.title("📊 Options Value Tracker")
+
+    import streamlit as st
+    import pandas as pd
+
+    st.markdown("""
+    <div style='display:flex; align-items:center; gap:10px;'>
+        <h1 style='margin:0;'>📈 Strikes Sold Today</h1>
+    </div>
+    <hr style='margin-top:5px;'>
+""", unsafe_allow_html=True)
+
+    # Upload files
+    input_file = st.file_uploader("Upload Values Excel", type=["xlsx"])
+    mw_file = st.file_uploader("Upload MW File", type=["csv"])
+
+    if input_file and mw_file:
+
+        # =========================
+        # ✅ STEP 1: READ INPUT FILE
+        # =========================
+        df_input = pd.read_excel(input_file)
+
+        # Remove extra column (if exists)
+        df_input = df_input.loc[:, df_input.columns != 0]
+
+        # Clean column names
+        df_input.columns = df_input.columns.str.strip().str.lower()
+
+        # Convert strike
+        df_input["strike"] = df_input["strike"].astype(float)
+
+        #st.write("Input Columns:", df_input.columns)
+
+        # =========================
+        # ✅ STEP 2: READ MW FILE
+        # =========================
         df_mw = pd.read_csv(mw_file)
+
+        # Clean column names
         df_mw.columns = df_mw.columns.str.strip().str.upper()
 
-        df_mw["STRIKE"] = df_mw["STRIKE"].astype(str).str.replace(",", "").astype(float)
-        df_mw["LOW"] = pd.to_numeric(df_mw["LOW"], errors="coerce")
-        df_mw["HIGH"] = pd.to_numeric(df_mw["HIGH"], errors="coerce")
+        #st.write("MW Columns:", df_mw.columns)
 
-        df_mw["OPTION TYPE"] = df_mw["OPTION TYPE"].replace({
-            "Call": "CE", "Put": "PE", "CALL": "CE", "PUT": "PE"
+        # =========================
+        # ✅ STEP 3: CLEAN MW DATA
+        # =========================
+
+        # Clean STRIKE
+        df_mw["STRIKE"] = (
+            df_mw["STRIKE"]
+            .astype(str)
+            .str.replace(",", "")
+            .astype(float)
+        )
+
+        # Clean LOW / HIGH
+        df_mw["LOW"] = pd.to_numeric(
+            df_mw["LOW"].astype(str).str.replace(",", ""),
+            errors="coerce"
+        )
+
+        df_mw["HIGH"] = pd.to_numeric(
+            df_mw["HIGH"].astype(str).str.replace(",", ""),
+            errors="coerce"
+        )
+        df_mw = df_mw.dropna(subset=["LOW", "HIGH"])
+        # Convert CALL/PUT → CE/PE
+        df_mw["OPTION TYPE"] = df_mw["OPTION TYPE"].astype(str).str.strip().replace({
+            "Call": "CE",
+            "Put": "PE",
+            "CALL": "CE",
+            "PUT": "PE"
         })
 
+        # Filter only NIFTY (important)
         df_mw = df_mw[df_mw["SYMBOL"] == "NIFTY"]
 
-        # -------- PROCESS --------
+        # =========================
+        # ✅ STEP 4: PROCESS
+        # =========================
         results = []
-        strikes = df_prev["Strike Price"].unique()
 
-        for strike in strikes:
+        for _, row in df_input.iterrows():
 
-            ce_row = df_prev[(df_prev["Option Type"] == "CE") & (df_prev["Strike Price"] == strike)]
-            pe_row = df_prev[(df_prev["Option Type"] == "PE") & (df_prev["Strike Price"] == strike)]
-
-            if ce_row.empty or pe_row.empty:
-                continue
-
-            ce_close = ce_row.iloc[0]["Close Price"]
-            pe_close = pe_row.iloc[0]["Close Price"]
-
-            if pd.isnull(ce_close) or pd.isnull(pe_close):
-                continue
-
-            value = (ce_close + pe_close) / 2
+            strike = row["strike"]
+            value = row["value to check"]
 
             # ---- CE ----
-            ce = df_mw[(df_mw["OPTION TYPE"] == "CE") & (abs(df_mw["STRIKE"] - strike) < 1)]
+            ce = df_mw[
+                (df_mw["OPTION TYPE"] == "CE") &
+                (abs(df_mw["STRIKE"] - strike) < 1)
+            ]
 
             ce_low = ce_high = None
             ce_status = "❌ Not Sold"
@@ -87,11 +146,15 @@ if page == "📊 Strikes Sold":
             if not ce.empty:
                 ce_low = ce.iloc[0]["LOW"]
                 ce_high = ce.iloc[0]["HIGH"]
+
                 if ce_low <= value <= ce_high:
                     ce_status = "✅ Sold"
 
             # ---- PE ----
-            pe = df_mw[(df_mw["OPTION TYPE"] == "PE") & (abs(df_mw["STRIKE"] - strike) < 1)]
+            pe = df_mw[
+                (df_mw["OPTION TYPE"] == "PE") &
+                (abs(df_mw["STRIKE"] - strike) < 1)
+            ]
 
             pe_low = pe_high = None
             pe_status = "❌ Not Sold"
@@ -99,39 +162,45 @@ if page == "📊 Strikes Sold":
             if not pe.empty:
                 pe_low = pe.iloc[0]["LOW"]
                 pe_high = pe.iloc[0]["HIGH"]
+
                 if pe_low <= value <= pe_high:
                     pe_status = "✅ Sold"
-
-            # ---- S/R ----
+            # =========================
+            # ✅ S/R CALCULATION
+            # =========================
             S2 = S1 = R1 = R2 = None
 
             if ce_status == "✅ Sold" and pe_status == "✅ Sold":
+
                 S2 = strike - (2 * value)
                 S1 = strike - value
                 R1 = strike + value
                 R2 = strike + (2 * value)
-
+                
             results.append({
                 "Strike": strike,
-                "Average": round(value, 2),
+                "Average": value,
+
                 "CE Low": ce_low,
                 "CE High": ce_high,
                 "PE Low": pe_low,
                 "PE High": pe_high,
+
                 "CE Status": ce_status,
                 "PE Status": pe_status,
+
                 "S2": S2,
                 "S1": S1,
                 "R1": R1,
                 "R2": R2
             })
 
-        # Safely handle empty results
-        if len(results) == 0:
-            st.warning("No matching data found. Please check your files.")
-        else:
-            result_df = pd.DataFrame(results)
-            st.dataframe(result_df, use_container_width=True)
+        # =========================
+        # ✅ STEP 5: DISPLAY
+        # =========================
+        result_df = pd.DataFrame(results)
+
+        st.dataframe(result_df, use_container_width=True)
 
 elif page == "📈 Calculations":
 
