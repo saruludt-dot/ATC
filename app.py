@@ -23,11 +23,11 @@ st.sidebar.markdown("### 📌 Navigation")
 page = st.sidebar.radio("", ["📈 Calculations", "📊 Strikes Sold"])
 
 # =====================================================
-# 📈 CALCULATIONS
+# 📈 CALCULATIONS (OLD + FIXED)
 # =====================================================
 if page == "📈 Calculations":
 
-    st.title("📊 Dashboard")
+    st.markdown("<h1>📈 Dashboard</h1><hr>", unsafe_allow_html=True)
 
     # -------- INPUT (NO TABS INITIALLY) --------
     col1, col2, col3 = st.columns(3)
@@ -75,22 +75,20 @@ if page == "📈 Calculations":
             if ce is not None and pe is not None:
                 diff_list.append((s, abs(ce-pe)))
 
-        if len(diff_list) == 0:
-            st.error("No valid CE/PE data")
-            st.stop()
-
         atm_strike = min(diff_list, key=lambda x: x[1])[0]
 
         # -------- SHOW TABS AFTER CLICK --------
-        tab1, tab2, tab3, tab4 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
             "📊 16 Rules",
             "📊 Average Only",
             "🔄 See-Saw",
-            "📊 Variations"
+            "📊 Variations",
+            "📍 Info"
         ])
 
         # ================= 16 RULES =================
         with tab1:
+
             rows = []
 
             ce = get_price("CE", strike)
@@ -113,7 +111,9 @@ if page == "📈 Calculations":
         # ================= AVERAGE (±12) =================
         with tab2:
 
-            all_strikes = sorted(df[df["Expiry Date"] == expiry_str]["Strike Price"].unique())
+            all_strikes = sorted(
+                df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
+            )
 
             idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
 
@@ -171,8 +171,12 @@ if page == "📈 Calculations":
             df_var = pd.DataFrame(rows, columns=["Strike","CE High","PE High"])
             st.dataframe(df_var)
 
+        # ================= INFO =================
+        with tab5:
+            st.success(f"ATM Strike: {int(atm_strike)}")
+
 # =====================================================
-# 📊 STRIKES SOLD (UNCHANGED)
+# 📊 STRIKES SOLD (KEEP YOUR OLD)
 # =====================================================
 elif page == "📊 Strikes Sold":
-    st.info("Use your existing working code here")
+    st.info("Use your working Strikes Sold code here")
