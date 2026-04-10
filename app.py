@@ -3,6 +3,9 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 
+if "calculated" not in st.session_state:
+    st.session_state.calculated = False
+
 # ---------------- IMAGE ----------------
 def get_img(path):
     with open(path, "rb") as f:
@@ -153,9 +156,10 @@ elif page == "📈 Calculations":
     """, unsafe_allow_html=True)
 
     # -------- TABS --------
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations"
-    ])
+    if st.session_state.calculated:
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations"
+        ])
 
     # -------- INPUT --------
     with tab1:
@@ -169,10 +173,11 @@ elif page == "📈 Calculations":
 
         with col3:
             strike = st.number_input("🎯 Strike", step=50)
-        calculate = st.button("🚀 Calculate", use_container_width=True)
+        if st.button("🚀 Calculate", use_container_width=True):
+            st.session_state.calculated = True
 
     # -------- MAIN LOGIC --------
-    if uploaded_file and calculate:
+    if uploaded_file and st.session_state.calculated:
 
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
@@ -416,7 +421,7 @@ elif page == "📈 Calculations":
         # -------- TAB 5 : AVERAGE ONLY --------
         with tab3:
 
-            if uploaded_file and calculate and 'atm_strike' in locals():
+            if uploaded_file and st.session_state.calculated and 'atm_strike' in locals():
 
                 st.subheader("📊 Average Only (ATM ± 10 Strikes)")
 
@@ -455,7 +460,7 @@ elif page == "📈 Calculations":
         # ----------- TAB 3 : SEE-SAW + RESULTS -----------
         with tab4:
 
-            if uploaded_file and calculate:
+            if uploaded_file and st.session_state.calculated:
 
                 st.subheader("🔄 See-Saw Calculation")
 
@@ -584,7 +589,7 @@ elif page == "📈 Calculations":
         # -------- VARIATIONS --------
         with tab5:
 
-            if uploaded_file and calculate and 'atm_strike' in locals():
+            if uploaded_file and st.session_state.calculated and 'atm_strike' in locals():
 
                 st.subheader("📊 Variations")
 
