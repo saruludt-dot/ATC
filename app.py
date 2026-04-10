@@ -791,5 +791,5 @@ elif page == "📈 Calculations":
                         components.html(pe_html, height=500, scrolling=True)
 
 
-        result_df = pd.DataFrame(rows, columns=["Strike","Average"])
-        st.dataframe(result_df)
+       # result_df = pd.DataFrame(rows, columns=["Strike","Average"])
+       # st.dataframe(result_df)
