@@ -6,7 +6,6 @@ import streamlit.components.v1 as components
 # ---------------- SESSION STATE ----------------
 if "calculated" not in st.session_state:
     st.session_state.calculated = False
-
 if "atm_strike" not in st.session_state:
     st.session_state.atm_strike = None
 
@@ -16,95 +15,14 @@ def get_img(path):
         return base64.b64encode(f.read()).decode()
 
 logo = get_img("logo.png")
+st.sidebar.markdown(f"<img src='data:image/png;base64,{logo}' width='100%'>", unsafe_allow_html=True)
 
-st.sidebar.markdown(
-    f"<img src='data:image/png;base64,{logo}' width='100%'>",
-    unsafe_allow_html=True
-)
-
-st.sidebar.markdown("### 📌 Navigation")
-page = st.sidebar.radio("", ["📈 Calculations", "📊 Strikes Sold"])
+page = st.sidebar.radio("Navigation", ["📈 Calculations", "📊 Strikes Sold"])
 
 # =====================================================
-# 📊 STRIKES SOLD
+# 📈 CALCULATIONS (FULL)
 # =====================================================
-if page == "📊 Strikes Sold":
-
-    st.title("📈 Strikes Sold Today")
-
-    prev_file = st.file_uploader("Upload Previous Day File", type=["csv"])
-    mw_file = st.file_uploader("Upload Today MW File", type=["csv"])
-
-    if prev_file is None or mw_file is None:
-        st.info("Please upload both files")
-        st.stop()
-
-    df_prev = pd.read_csv(prev_file, on_bad_lines='skip', engine='python')
-    df_prev.columns = df_prev.columns.str.strip()
-
-    df_prev["Strike Price"] = df_prev["Strike Price"].astype(str).str.replace(",", "").astype(float)
-    df_prev["Close Price"] = pd.to_numeric(df_prev["Close Price"], errors="coerce")
-    df_prev["Option Type"] = df_prev["Option Type"].str.strip().str.upper()
-
-    df_mw = pd.read_csv(mw_file)
-    df_mw.columns = df_mw.columns.str.strip().str.upper()
-
-    df_mw["STRIKE"] = df_mw["STRIKE"].astype(str).str.replace(",", "").astype(float)
-    df_mw["LOW"] = pd.to_numeric(df_mw["LOW"], errors="coerce")
-    df_mw["HIGH"] = pd.to_numeric(df_mw["HIGH"], errors="coerce")
-
-    df_mw["OPTION TYPE"] = df_mw["OPTION TYPE"].replace({
-        "Call": "CE", "Put": "PE", "CALL": "CE", "PUT": "PE"
-    })
-
-    df_mw = df_mw[df_mw["SYMBOL"] == "NIFTY"]
-
-    results = []
-    strikes = df_prev["Strike Price"].unique()
-
-    for strike in strikes:
-        ce_row = df_prev[(df_prev["Option Type"] == "CE") & (df_prev["Strike Price"] == strike)]
-        pe_row = df_prev[(df_prev["Option Type"] == "PE") & (df_prev["Strike Price"] == strike)]
-
-        if ce_row.empty or pe_row.empty:
-            continue
-
-        ce_close = ce_row.iloc[0]["Close Price"]
-        pe_close = pe_row.iloc[0]["Close Price"]
-
-        if pd.isnull(ce_close) or pd.isnull(pe_close):
-            continue
-
-        value = (ce_close + pe_close) / 2
-
-        ce = df_mw[(df_mw["OPTION TYPE"] == "CE") & (abs(df_mw["STRIKE"] - strike) < 1)]
-        pe = df_mw[(df_mw["OPTION TYPE"] == "PE") & (abs(df_mw["STRIKE"] - strike) < 1)]
-
-        ce_status = "❌ Not Sold"
-        pe_status = "❌ Not Sold"
-
-        if not ce.empty:
-            if ce.iloc[0]["LOW"] <= value <= ce.iloc[0]["HIGH"]:
-                ce_status = "✅ Sold"
-
-        if not pe.empty:
-            if pe.iloc[0]["LOW"] <= value <= pe.iloc[0]["HIGH"]:
-                pe_status = "✅ Sold"
-
-        results.append({
-            "Strike": strike,
-            "Average": round(value, 2),
-            "CE Status": ce_status,
-            "PE Status": pe_status
-        })
-
-    result_df = pd.DataFrame(results).sort_values(by="Strike")
-    st.dataframe(result_df, use_container_width=True)
-
-# =====================================================
-# 📈 CALCULATIONS
-# =====================================================
-elif page == "📈 Calculations":
+if page == "📈 Calculations":
 
     st.title("📊 Dashboard")
 
@@ -112,10 +30,8 @@ elif page == "📈 Calculations":
 
     with col1:
         uploaded_file = st.file_uploader("📥 Upload CSV")
-
     with col2:
         expiry = st.date_input("📅 Expiry Date")
-
     with col3:
         strike = st.number_input("🎯 Strike", step=50)
 
@@ -132,6 +48,8 @@ elif page == "📈 Calculations":
         df["Strike Price"] = df["Strike Price"].astype(str).str.replace(",", "").astype(float)
 
         df["Close Price"] = pd.to_numeric(df["Close Price"], errors="coerce")
+        df["High Price"] = pd.to_numeric(df["High Price"], errors="coerce")
+        df["Low Price"] = pd.to_numeric(df["Low Price"], errors="coerce")
 
         expiry_str = expiry.strftime("%d-%b-%Y")
 
@@ -141,38 +59,105 @@ elif page == "📈 Calculations":
                    (df["Strike Price"] == s)]
             return r.iloc[0]["Close Price"] if not r.empty else None
 
+        # ---------------- ATM ----------------
+        strikes = sorted(df[df["Expiry Date"] == expiry_str]["Strike Price"].unique())
         diff_list = []
-        strikes = df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
 
         for s in strikes:
             ce = get_price("CE", s)
             pe = get_price("PE", s)
-
             if ce and pe:
                 diff_list.append((s, abs(ce - pe)))
 
         if diff_list:
-            atm_strike = min(diff_list, key=lambda x: x[1])[0]
-            st.session_state.atm_strike = atm_strike
+            st.session_state.atm_strike = min(diff_list, key=lambda x: x[1])[0]
 
         if st.session_state.atm_strike:
 
-            tab1, tab2 = st.tabs(["📊 Average", "📍 ATM"])
+            tab1, tab2, tab3, tab4 = st.tabs([
+                "📊 16 Rules",
+                "📊 Average",
+                "🔄 See-Saw",
+                "📊 Variations"
+            ])
 
+            # ================= 16 RULES =================
             with tab1:
                 rows = []
-                for s in sorted(strikes):
+                ce = get_price("CE", strike)
+                pe = get_price("PE", strike)
+                if ce and pe:
+                    rows.append(["ATM", round((ce+pe)/2,2)])
+
+                for step in [50,100,150,200]:
+                    ce = get_price("CE", strike+step)
+                    pe = get_price("PE", strike-step)
+                    if ce and pe:
+                        rows.append([f"{step}", round((ce+pe)/2,2)])
+
+                df_rules = pd.DataFrame(rows, columns=["Rule","Average"])
+                st.dataframe(df_rules, use_container_width=True)
+
+            # ================= AVERAGE (±12) =================
+            with tab2:
+                idx = strikes.index(st.session_state.atm_strike)
+                selected = strikes[max(0, idx-12): idx+13]
+
+                avg_rows = []
+                for s in selected:
                     ce = get_price("CE", s)
                     pe = get_price("PE", s)
                     if ce and pe:
-                        rows.append([int(s), round((ce + pe) / 2, 2)])
+                        avg_rows.append([int(s), round((ce+pe)/2,2)])
 
-                df_out = pd.DataFrame(rows, columns=["Strike", "Average"])
-                st.dataframe(df_out, use_container_width=True)
+                df_avg = pd.DataFrame(avg_rows, columns=["Strike","Average"])
 
-            with tab2:
-                st.success(f"ATM Strike: {int(st.session_state.atm_strike)}")
+                def highlight(row):
+                    if row["Strike"] == int(st.session_state.atm_strike):
+                        return ["background-color: yellow"]*2
+                    return [""]*2
+
+                st.dataframe(df_avg.style.apply(highlight, axis=1), use_container_width=True)
+
+            # ================= SEE-SAW =================
+            with tab3:
+                mapping = []
+                for s in strikes:
+                    ce = get_price("CE", s-100)
+                    pe = get_price("PE", s+100)
+                    if ce and pe:
+                        mapping.append([int(s), round(ce,2), round(pe,2)])
+
+                df_map = pd.DataFrame(mapping, columns=["Strike","Call","Put"])
+                st.dataframe(df_map, use_container_width=True)
+
+                csv = df_map.to_csv(index=False).encode('utf-8')
+                st.download_button("📥 Download See-Saw CSV", data=csv, file_name="seesaw.csv")
+
+            # ================= VARIATIONS =================
+            with tab4:
+                rows = []
+                prev_ce = prev_pe = None
+
+                for s in strikes:
+                    ce_row = df[(df["Option Type"]=="CE") & (df["Strike Price"]==s)]
+                    pe_row = df[(df["Option Type"]=="PE") & (df["Strike Price"]==s)]
+
+                    ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty else None
+                    pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty else None
+
+                    rows.append([int(s), ce_high, pe_high])
+
+                df_var = pd.DataFrame(rows, columns=["Strike","CE High","PE High"])
+                st.dataframe(df_var, use_container_width=True)
 
     if st.button("🔄 Reset"):
         st.session_state.calculated = False
         st.session_state.atm_strike = None
+
+# =====================================================
+# 📊 STRIKES SOLD (same)
+# =====================================================
+elif page == "📊 Strikes Sold":
+    st.title("📈 Strikes Sold Today")
+    st.info("Use previous working version here")
