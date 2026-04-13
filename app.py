@@ -160,8 +160,57 @@ if page == "📊 Strikes Sold":
         st.warning("No matching data found. Check files.")
     else:
         result_df = pd.DataFrame(results)
-        result_df = result_df.sort_values(by="Strike").reset_index(drop=True)
-        st.dataframe(result_df, use_container_width=True)
+        # ✅ FILTER ONLY SOLD STRIKES
+        sold_df = result_df[
+            (result_df["CE Status"] == "✅ Sold") &
+            (result_df["PE Status"] == "✅ Sold")
+        ]
+
+        if not sold_df.empty:
+
+            # 👉 Pick nearest strike (middle one)
+            mid = len(sold_df) // 2
+            row = sold_df.iloc[mid]
+
+            strike = int(row["Strike"])
+            s1 = row["S1"]
+            s2 = row["S2"]
+            r1 = row["R1"]
+            r2 = row["R2"]
+
+            pine_code = f"""
+        //@version=6
+        indicator("Nifty Synthetic + Strikes Sold", overlay=true)
+
+        // === INPUT ===
+        strike = {strike}
+
+        // === LEVELS ===
+        S1 = {s1}
+        S2 = {s2}
+        R1 = {r1}
+        R2 = {r2}
+
+        // === PLOT LEVELS ===
+        plot(strike, "Strike", color=color.yellow, linewidth=2)
+
+        plot(R1, "R1", color=color.green)
+        plot(R2, "R2", color=color.green)
+
+        plot(S1, "S1", color=color.red)
+        plot(S2, "S2", color=color.red)
+        """
+
+            st.subheader("📌 TradingView Pine Script")
+            st.code(pine_code)
+
+            st.download_button(
+                "📥 Download Pine Script",
+                pine_code,
+                file_name="strikes_sold.pine"
+            )
+                result_df = result_df.sort_values(by="Strike").reset_index(drop=True)
+                st.dataframe(result_df, use_container_width=True)
 
 # =====================================================
 # ✅ CALCULATIONS (OLD SAFE VERSION)
