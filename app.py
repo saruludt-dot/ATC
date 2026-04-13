@@ -61,8 +61,14 @@ if page == "📊 Strikes Sold":
 
     # -------- MW FILE --------
     df_mw = pd.read_csv(mw_file)
+
     df_mw.columns = df_mw.columns.str.strip().str.upper()
 
+    df_mw["EXPIRY_DT"] = pd.to_datetime(df_mw["EXPIRY_DT"], errors="coerce")
+    selected_expiry = pd.to_datetime(expiry)
+    df_mw = df_mw[df_mw["EXPIRY_DT"] == selected_expiry]
+
+    # EXISTING CODE
     df_mw["STRIKE"] = df_mw["STRIKE"].astype(str).str.replace(",", "").astype(float)
     df_mw["LOW"] = pd.to_numeric(df_mw["LOW"], errors="coerce")
     df_mw["HIGH"] = pd.to_numeric(df_mw["HIGH"], errors="coerce")
