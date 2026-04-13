@@ -35,6 +35,10 @@ if page == "📊 Strikes Sold":
 
     st.markdown("<h1>📈 Strikes Sold Today</h1><hr>", unsafe_allow_html=True)
 
+    # ✅ ADD THIS
+    expiry = st.date_input("📅 Select Expiry Date")
+    expiry_str = expiry.strftime("%d-%b-%Y")
+
     prev_file = st.file_uploader("Upload Previous Day File", type=["csv"])
     mw_file = st.file_uploader("Upload Today MW File", type=["csv"])
 
@@ -44,7 +48,12 @@ if page == "📊 Strikes Sold":
 
     # -------- PREVIOUS DAY --------
     df_prev = pd.read_csv(prev_file, on_bad_lines='skip', engine='python')
+
     df_prev.columns = df_prev.columns.str.strip()
+
+    # ✅ ADD THIS
+    df_prev["Expiry Date"] = df_prev["Expiry Date"].astype(str).str.strip()
+    df_prev = df_prev[df_prev["Expiry Date"] == expiry_str]
 
     df_prev["Strike Price"] = df_prev["Strike Price"].astype(str).str.replace(",", "").astype(float)
     df_prev["Close Price"] = pd.to_numeric(df_prev["Close Price"], errors="coerce")
