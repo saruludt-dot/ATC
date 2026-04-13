@@ -61,12 +61,20 @@ if page == "📊 Strikes Sold":
 
     # -------- MW FILE --------
     df_mw = pd.read_csv(mw_file)
-
     df_mw.columns = df_mw.columns.str.strip().str.upper()
 
-    df_mw["EXPIRY_DT"] = pd.to_datetime(df_mw["EXPIRY_DT"], errors="coerce")
+    # ✅ AUTO DETECT EXPIRY COLUMN
+    expiry_col = next((col for col in df_mw.columns if "EXPIRY" in col), None)
+
+    if expiry_col is None:
+        st.error("❌ Expiry column not found")
+        st.stop()
+
+    # ✅ FILTER
+    df_mw[expiry_col] = pd.to_datetime(df_mw[expiry_col], errors="coerce")
     selected_expiry = pd.to_datetime(expiry)
-    df_mw = df_mw[df_mw["EXPIRY_DT"] == selected_expiry]
+
+    df_mw = df_mw[df_mw[expiry_col] == selected_expiry]
 
     # EXISTING CODE
     df_mw["STRIKE"] = df_mw["STRIKE"].astype(str).str.replace(",", "").astype(float)
