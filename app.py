@@ -209,8 +209,8 @@ if page == "📊 Strikes Sold":
                 pine_code,
                 file_name="strikes_sold.pine"
             )
-                result_df = result_df.sort_values(by="Strike").reset_index(drop=True)
-                st.dataframe(result_df, use_container_width=True)
+        result_df = result_df.sort_values(by="Strike").reset_index(drop=True)
+        st.dataframe(result_df, use_container_width=True)
 
 # =====================================================
 # ✅ CALCULATIONS (OLD SAFE VERSION)
