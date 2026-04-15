@@ -547,6 +547,10 @@ elif page == "📈 Calculations":
                 # -------- STRING FORMAT --------
                 call_string = "[" + ",".join(call_list) + "]"
                 put_string = "[" + ",".join(put_list) + "]"
+                
+                # ✅ STORE FOR GAP TAB
+                st.session_state["call_data"] = call_string
+                st.session_state["put_data"] = put_string
 
                 # -------- COPY UI --------
                 col1, col2 = st.columns(2)
@@ -757,18 +761,23 @@ elif page == "📈 Calculations":
 
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
-        # -------- GAP ADJUST TAB --------
         with tab6:
 
             st.subheader("⚡ Gap Up / Gap Down Adjustment")
 
-            col1, col2 = st.columns(2)
+            # ✅ GET FROM SEE-SAW
+            call_input = st.session_state.get("call_data", "")
+            put_input = st.session_state.get("put_data", "")
 
-            with col1:
-                call_input = st.text_area("🟢 Paste CALL List", height=150)
+            if not call_input or not put_input:
+                st.warning("⚠️ Please run See-Saw tab first")
+                st.stop()
 
-            with col2:
-                put_input = st.text_area("🔴 Paste PUT List", height=150)
+            st.success("✅ Auto-loaded from See-Saw")
+
+            # Optional preview
+            st.text_area("🟢 CALL (Auto)", call_input, height=100)
+            st.text_area("🔴 PUT (Auto)", put_input, height=100)
 
             points = st.number_input("🎯 Adjustment Points", value=100, step=50)
 
@@ -798,7 +807,7 @@ elif page == "📈 Calculations":
 
                     return "[" + ",".join(map(str, result)) + "]"
 
-                # 🔥 LOGIC BASED ON GAP
+                # 🔥 GAP LOGIC
                 if gap_type == "🔼 Gap Up":
                     call_change = +points
                     put_change = -points
@@ -813,29 +822,10 @@ elif page == "📈 Calculations":
 
                 col1, col2 = st.columns(2)
 
-                # 🟢 CALL OUTPUT
                 with col1:
                     st.markdown("### 🟢 Adjusted CALL")
+                    st.code(new_call)
 
-                    components.html(f"""
-                    <textarea id="call_adj" style="width:100%;height:100px;">{new_call}</textarea>
-                    <br>
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('call_adj').value)">
-                    Copy CALL
-                    </button>
-                    """, height=150)
-
-                # 🔴 PUT OUTPUT
                 with col2:
                     st.markdown("### 🔴 Adjusted PUT")
-
-                    components.html(f"""
-                    <textarea id="put_adj" style="width:100%;height:100px;">{new_put}</textarea>
-                    <br>
-                    <button onclick="navigator.clipboard.writeText(document.getElementById('put_adj').value)">
-                    Copy PUT
-                    </button>
-                    """, height=150)
-        
-
-        
+                    st.code(new_put)
