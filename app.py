@@ -3,29 +3,23 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 
-# =========================
-# SESSION INIT
-# =========================
+# ================= SESSION =================
 if "calculated" not in st.session_state:
     st.session_state["calculated"] = False
 
-# =========================
-# SAFE CSV READ
-# =========================
+# ================= SAFE READ =================
 def safe_read(file):
-    if file is None:
-        return None
-    file.seek(0)
-    return pd.read_csv(file, on_bad_lines='skip', engine='python')
+    if file:
+        file.seek(0)
+        return pd.read_csv(file, on_bad_lines='skip', engine='python')
+    return None
 
-# =========================
-# GAP PROCESS
-# =========================
+# ================= GAP FUNCTION =================
 def adjust_list(data, change):
     data = data.replace("[", "").replace("]", "")
     items = data.split(",")
-
     result = []
+
     for i in range(0, len(items), 2):
         try:
             strike = float(items[i])
@@ -36,9 +30,7 @@ def adjust_list(data, change):
 
     return "[" + ",".join(map(str, result)) + "]"
 
-# =========================
-# SIDEBAR
-# =========================
+# ---------------- IMAGE ----------------
 def get_img(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
@@ -50,14 +42,13 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
+st.sidebar.markdown("### 📌 Navigation")
 page = st.sidebar.radio("", ["📈 Calculations", "📊 Strikes Sold"])
 
 # =====================================================
 # 📈 CALCULATIONS
 # =====================================================
 if page == "📈 Calculations":
-
-    st.title("📈 Dashboard")
 
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📥 Input", "📊 16 Rules", "📊 Average Only",
@@ -85,7 +76,6 @@ if page == "📈 Calculations":
             st.session_state["expiry"] = expiry
             st.session_state["strike"] = strike
 
-    # LOAD FROM SESSION
     uploaded_file = st.session_state.get("file")
     expiry = st.session_state.get("expiry")
     strike = st.session_state.get("strike")
@@ -99,6 +89,7 @@ if page == "📈 Calculations":
         df["Option Type"] = df["Option Type"].str.strip().str.upper()
 
         df["Strike Price"] = df["Strike Price"].astype(str).str.replace(",", "").astype(float)
+
         df["Close Price"] = pd.to_numeric(df["Close Price"], errors="coerce")
         df["High Price"] = pd.to_numeric(df["High Price"], errors="coerce")
         df["Low Price"] = pd.to_numeric(df["Low Price"], errors="coerce")
@@ -109,9 +100,7 @@ if page == "📈 Calculations":
             r = df[(df["Expiry Date"]==expiry_str) & (df["Option Type"]==opt) & (df["Strike Price"]==s)]
             return r.iloc[0]["Close Price"] if not r.empty else None
 
-        # =========================
-        # ATM DETECTION
-        # =========================
+        # -------- ATM --------
         diff_list = []
         strikes = df[df["Expiry Date"]==expiry_str]["Strike Price"].unique()
 
@@ -119,23 +108,17 @@ if page == "📈 Calculations":
             ce = get_price("CE", s)
             pe = get_price("PE", s)
             if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
-                diff_list.append((s, abs(ce-pe)))
+                diff_list.append((s, ce, pe, abs(ce-pe)))
 
-        if not diff_list:
-            st.error("No ATM found")
-            st.stop()
+        if diff_list:
+            atm_strike, atm_ce, atm_pe, _ = min(diff_list, key=lambda x: x[3])
 
-        atm_strike = min(diff_list, key=lambda x: x[1])[0]
-
-        # =====================================================
-        # 📊 16 RULES (UNCHANGED LOGIC)
-        # =====================================================
+        # -------- 16 RULES --------
         with tab2:
             rows = []
 
             ce = get_price("CE", strike)
             pe = get_price("PE", strike)
-
             if ce and pe:
                 rows.append(["A", (ce+pe)/2, "A", (ce+pe)/2])
 
@@ -153,33 +136,14 @@ if page == "📈 Calculations":
             table_df = pd.DataFrame(rows, columns=["Name","CE","Name ","PE"])
             st.dataframe(table_df)
 
-        # =====================================================
-        # 📊 AVERAGE ONLY
-        # =====================================================
-        with tab3:
-            all_strikes = sorted(strikes)
-            idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
-            selected = all_strikes[max(0, idx-24): idx+25]
-
-            avg_rows = []
-            for s in selected:
-                ce = get_price("CE", s)
-                pe = get_price("PE", s)
-                if ce and pe:
-                    avg_rows.append([int(s), round((ce+pe)/2,2)])
-
-            st.dataframe(pd.DataFrame(avg_rows, columns=["Strike","Average"]))
-
-        # =====================================================
-        # 🔄 SEE-SAW
-        # =====================================================
+        # -------- SEE-SAW --------
         with tab4:
 
             mapping = []
-            all_strikes = sorted(strikes)
+            strikes_sorted = sorted(strikes)
 
-            idx = min(range(len(all_strikes)), key=lambda i: abs(all_strikes[i] - atm_strike))
-            selected = all_strikes[max(0, idx-20): idx+21]
+            idx = min(range(len(strikes_sorted)), key=lambda i: abs(strikes_sorted[i] - atm_strike))
+            selected = strikes_sorted[max(0, idx-20): idx+21]
 
             for s in selected:
                 ce = get_price("CE", s-100)
@@ -205,27 +169,25 @@ if page == "📈 Calculations":
             st.session_state["call_data"] = call_string
             st.session_state["put_data"] = put_string
 
-            st.text_area("CALL", call_string, height=100)
-            st.text_area("PUT", put_string, height=100)
+            st.text_area("CALL", call_string)
+            st.text_area("PUT", put_string)
 
-        # =====================================================
-        # ⚡ GAP ADJUST
-        # =====================================================
+        # -------- GAP ADJUST --------
         with tab6:
 
             call_input = st.session_state.get("call_data")
             put_input = st.session_state.get("put_data")
 
-            if not call_input or not put_input:
+            if not call_input:
                 st.warning("Run See-Saw first")
                 st.stop()
 
             points = st.number_input("Points", value=100, step=50)
-            gap_type = st.radio("Market", ["Gap Up","Gap Down"])
+            gap = st.radio("Market", ["Gap Up","Gap Down"])
 
             if st.button("Adjust"):
 
-                if gap_type == "Gap Up":
+                if gap == "Gap Up":
                     new_call = adjust_list(call_input, +points)
                     new_put = adjust_list(put_input, -points)
                 else:
@@ -239,19 +201,3 @@ if page == "📈 Calculations":
 
                 with col2:
                     st.code(new_put)
-
-# =====================================================
-# 📊 STRIKES SOLD
-# =====================================================
-elif page == "📊 Strikes Sold":
-
-    st.title("📊 Strikes Sold")
-
-    prev_file = st.file_uploader("Prev File")
-    mw_file = st.file_uploader("MW File")
-
-    if prev_file and mw_file:
-        df_prev = safe_read(prev_file)
-        df_mw = safe_read(mw_file)
-
-        st.success("Files Loaded")
