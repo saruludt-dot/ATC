@@ -176,8 +176,8 @@ elif page == "📈 Calculations":
     """, unsafe_allow_html=True)
 
     # -------- TABS --------
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations"
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations", "⚡ Gap Adjust"
     ])
 
     # -------- INPUT --------
@@ -757,3 +757,73 @@ elif page == "📈 Calculations":
 
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
+
+        # -------- GAP ADJUST TAB --------
+        with tab6:
+
+            st.subheader("⚡ Gap Up / Gap Down Adjustment")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                call_input = st.text_area("🟢 Paste CALL List", height=150)
+
+            with col2:
+                put_input = st.text_area("🔴 Paste PUT List", height=150)
+
+            points = st.number_input("🎯 Adjustment Points", value=100, step=50)
+
+            if st.button("🚀 Adjust Strikes"):
+
+                def process(data, change):
+                    data = data.replace("[", "").replace("]", "")
+                    items = data.split(",")
+
+                    result = []
+
+                    for i in range(0, len(items), 2):
+                        try:
+                            strike = float(items[i])
+                            price = items[i+1]
+
+                            new_strike = strike + change
+
+                            result.extend([int(new_strike), price])
+                        except:
+                            continue
+
+                    return "[" + ",".join(map(str, result)) + "]"
+
+                # ✅ CALL → Increase
+                new_call = process(call_input, points)
+
+                # ✅ PUT → Decrease
+                new_put = process(put_input, -points)
+
+                st.divider()
+
+                col1, col2 = st.columns(2)
+
+                # 🟢 CALL OUTPUT
+                with col1:
+                    st.markdown("### 🟢 Adjusted CALL")
+
+                    components.html(f"""
+                    <textarea id="call_adj" style="width:100%;height:100px;">{new_call}</textarea>
+                    <br>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('call_adj').value)">
+                    Copy CALL
+                    </button>
+                    """, height=150)
+
+                # 🔴 PUT OUTPUT
+                with col2:
+                    st.markdown("### 🔴 Adjusted PUT")
+
+                    components.html(f"""
+                    <textarea id="put_adj" style="width:100%;height:100px;">{new_put}</textarea>
+                    <br>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('put_adj').value)">
+                    Copy PUT
+                    </button>
+                    """, height=150)
