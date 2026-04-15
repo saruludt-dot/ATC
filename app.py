@@ -176,8 +176,9 @@ elif page == "📈 Calculations":
     """, unsafe_allow_html=True)
 
     # -------- TABS --------
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations"
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "📥 Input", "📊 16 Rules", "📊 Average Only",
+        "🔄 See-Saw", "📊 Variations", "⚡ Gap Adjust"
     ])
 
     # -------- INPUT --------
@@ -560,6 +561,8 @@ elif page == "📈 Calculations":
                 # -------- STRING FORMAT --------
                 call_string = "[" + ",".join(call_list) + "]"
                 put_string = "[" + ",".join(put_list) + "]"
+                st.session_state["call_data"] = call_string
+                st.session_state["put_data"] = put_string
 
                 # -------- COPY UI --------
                 col1, col2 = st.columns(2)
