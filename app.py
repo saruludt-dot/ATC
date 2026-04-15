@@ -809,10 +809,10 @@ elif page == "📈 Calculations":
 
                 if gap_type == "Gap Up":
                     new_call = adjust(call_input, +points)
-                    new_put = adjust(put_input, -points)
+                    new_put = adjust(put_input, +points)
                 else:
                     new_call = adjust(call_input, -points)
-                    new_put = adjust(put_input, +points)
+                    new_put = adjust(put_input, -points)
 
                 col1, col2 = st.columns(2)
 
