@@ -773,3 +773,54 @@ elif page == "📈 Calculations":
 
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
+
+        # -------- GAP ADJUST --------
+        with tab6:
+
+            st.subheader("⚡ Gap Adjustment")
+
+            call_input = st.session_state.get("call_data")
+            put_input = st.session_state.get("put_data")
+
+            if not call_input:
+                st.warning("⚠️ Run See-Saw first")
+                st.stop()
+
+            points = st.number_input("Points", value=100, step=50)
+
+            gap_type = st.radio("Market", ["Gap Up", "Gap Down"])
+
+            def adjust(data, change):
+                data = data.replace("[", "").replace("]", "")
+                items = data.split(",")
+
+                result = []
+                for i in range(0, len(items), 2):
+                    try:
+                        strike = float(items[i])
+                        price = items[i+1]
+                        result.extend([int(strike + change), price])
+                    except:
+                        continue
+
+                return "[" + ",".join(map(str, result)) + "]"
+
+            if st.button("🚀 Adjust"):
+
+                if gap_type == "Gap Up":
+                    new_call = adjust(call_input, +points)
+                    new_put = adjust(put_input, -points)
+                else:
+                    new_call = adjust(call_input, -points)
+                    new_put = adjust(put_input, +points)
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("### 🟢 CALL")
+                    st.code(new_call)
+
+                with col2:
+                    st.markdown("### 🔴 PUT")
+                    st.code(new_put)
+
