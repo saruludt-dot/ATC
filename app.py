@@ -198,6 +198,12 @@ elif page == "📈 Calculations":
             strike = st.number_input("🎯 Strike", step=50)
         calculate = st.button("🚀 Calculate", use_container_width=True)
 
+        if calculate:
+            st.session_state["calculated"] = True
+            st.session_state["uploaded_file"] = uploaded_file
+            st.session_state["expiry"] = expiry
+            st.session_state["strike"] = strike
+
     # -------- MAIN LOGIC --------
     if uploaded_file and calculate:
 
