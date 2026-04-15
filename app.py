@@ -193,9 +193,11 @@ elif page == "📈 Calculations":
         with col3:
             strike = st.number_input("🎯 Strike", step=50)
         calculate = st.button("🚀 Calculate", use_container_width=True)
+        if calculate:
+            st.session_state["calculated"] = True
 
     # -------- MAIN LOGIC --------
-    if uploaded_file and calculate:
+    if uploaded_file and (calculate or st.session_state.get("calculated")):
 
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
