@@ -757,7 +757,6 @@ elif page == "📈 Calculations":
 
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
-
         # -------- GAP ADJUST TAB --------
         with tab6:
 
@@ -772,6 +771,11 @@ elif page == "📈 Calculations":
                 put_input = st.text_area("🔴 Paste PUT List", height=150)
 
             points = st.number_input("🎯 Adjustment Points", value=100, step=50)
+
+            gap_type = st.radio(
+                "📊 Select Market Condition",
+                ["🔼 Gap Up", "🔽 Gap Down"]
+            )
 
             if st.button("🚀 Adjust Strikes"):
 
@@ -794,11 +798,16 @@ elif page == "📈 Calculations":
 
                     return "[" + ",".join(map(str, result)) + "]"
 
-                # ✅ CALL → Increase
-                new_call = process(call_input, points)
+                # 🔥 LOGIC BASED ON GAP
+                if gap_type == "🔼 Gap Up":
+                    call_change = +points
+                    put_change = -points
+                else:
+                    call_change = -points
+                    put_change = +points
 
-                # ✅ PUT → Decrease
-                new_put = process(put_input, -points)
+                new_call = process(call_input, call_change)
+                new_put = process(put_input, put_change)
 
                 st.divider()
 
@@ -827,3 +836,6 @@ elif page == "📈 Calculations":
                     Copy PUT
                     </button>
                     """, height=150)
+        
+
+        
