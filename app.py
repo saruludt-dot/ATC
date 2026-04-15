@@ -3,6 +3,10 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 
+# ✅ SESSION INIT
+if "calculated" not in st.session_state:
+    st.session_state["calculated"] = False
+
 # ---------------- IMAGE ----------------
 def get_img(path):
     with open(path, "rb") as f:
