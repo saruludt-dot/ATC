@@ -205,7 +205,11 @@ elif page == "📈 Calculations":
             st.session_state["strike"] = strike
 
     # -------- MAIN LOGIC --------
-    if uploaded_file and calculate:
+    uploaded_file = st.session_state.get("uploaded_file")
+    expiry = st.session_state.get("expiry")
+    strike = st.session_state.get("strike")
+
+    if uploaded_file and st.session_state.get("calculated"):
 
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
@@ -771,53 +775,51 @@ elif page == "📈 Calculations":
 
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
+                        
+        # -------- GAP ADJUST TAB --------
         with tab6:
 
             st.subheader("⚡ Gap Up / Gap Down Adjustment")
 
-            # ✅ GET FROM SEE-SAW
-            call_input = st.session_state.get("call_data", "")
-            put_input = st.session_state.get("put_data", "")
+            call_input = st.session_state.get("call_data")
+            put_input = st.session_state.get("put_data")
 
             if not call_input or not put_input:
                 st.warning("⚠️ Please run See-Saw tab first")
                 st.stop()
 
-            st.success("✅ Auto-loaded from See-Saw")
+            st.success("✅ Loaded from See-Saw")
 
-            # Optional preview
             st.text_area("🟢 CALL (Auto)", call_input, height=100)
             st.text_area("🔴 PUT (Auto)", put_input, height=100)
 
             points = st.number_input("🎯 Adjustment Points", value=100, step=50)
 
             gap_type = st.radio(
-                "📊 Select Market Condition",
+                "📊 Market Condition",
                 ["🔼 Gap Up", "🔽 Gap Down"]
             )
 
+            def process(data, change):
+                data = data.replace("[", "").replace("]", "")
+                items = data.split(",")
+
+                result = []
+
+                for i in range(0, len(items), 2):
+                    try:
+                        strike = float(items[i])
+                        price = items[i+1]
+
+                        new_strike = strike + change
+                        result.extend([int(new_strike), price])
+                    except:
+                        continue
+
+                return "[" + ",".join(map(str, result)) + "]"
+
             if st.button("🚀 Adjust Strikes"):
 
-                def process(data, change):
-                    data = data.replace("[", "").replace("]", "")
-                    items = data.split(",")
-
-                    result = []
-
-                    for i in range(0, len(items), 2):
-                        try:
-                            strike = float(items[i])
-                            price = items[i+1]
-
-                            new_strike = strike + change
-
-                            result.extend([int(new_strike), price])
-                        except:
-                            continue
-
-                    return "[" + ",".join(map(str, result)) + "]"
-
-                # 🔥 GAP LOGIC
                 if gap_type == "🔼 Gap Up":
                     call_change = +points
                     put_change = -points
