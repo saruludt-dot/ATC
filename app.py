@@ -193,12 +193,23 @@ elif page == "📈 Calculations":
         with col3:
             strike = st.number_input("🎯 Strike", step=50)
         calculate = st.button("🚀 Calculate", use_container_width=True)
+
+        if calculate:
+            st.session_state["calculated"] = True
+            st.session_state["file"] = uploaded_file
+            st.session_state["expiry"] = expiry
+            st.session_state["strike"] = strike
         if calculate:
             st.session_state["calculated"] = True
 
-    # -------- MAIN LOGIC --------
-    if uploaded_file and (calculate or st.session_state.get("calculated")):
+    uploaded_file = st.session_state.get("file")
+    expiry = st.session_state.get("expiry")
+    strike = st.session_state.get("strike")
 
+    # -------- MAIN LOGIC --------
+    if uploaded_file and st.session_state.get("calculated"):
+
+        uploaded_file.seek(0)
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
         df.columns = df.columns.str.strip()
