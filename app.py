@@ -294,7 +294,7 @@ elif page == "📈 Calculations":
 
         # -------- ATM --------
         diff_list = []
-        strikes = df[df["EXPIRY"]==expiry_str]["Strike Price"].unique()
+        strikes = sorted(df["STRIKE"].dropna().unique())
 
         for s in strikes:
             ce = get_price("CE", s)
