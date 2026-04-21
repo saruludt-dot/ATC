@@ -49,15 +49,37 @@ if page == "📊 Strikes Sold":
     # -------- PREVIOUS DAY --------
     df_prev = pd.read_csv(prev_file, on_bad_lines='skip', engine='python')
 
-    df_prev.columns = df_prev.columns.str.strip()
+    # 🔥 CLEAN COLUMN NAMES
+    df_prev.columns = df_prev.columns.str.strip().str.upper()
 
-    # ✅ ADD THIS
-    df_prev["EXPIRY"] = df_prev["EXPIRY"].astype(str).str.strip()
-    df_prev = df_prev[df_prev["EXPIRY"] == expiry_str]
+    # 🔍 AUTO DETECT COLUMNS
+    def find_col(df, keyword):
+        for c in df.columns:
+            if keyword in c:
+                return c
+        return None
 
-    df_prev["STRIKE"] = df_prev["STRIKE"].astype(str).str.replace(",", "").astype(float)
-    df_prev["CLOSE"] = pd.to_numeric(df_prev["CLOSE"], errors="coerce")
-    df_prev["OPTION"] = df_prev["OPTION"].str.strip().str.upper()
+    expiry_col = find_col(df_prev, "EXPIRY")
+    strike_col = find_col(df_prev, "STRIKE")
+    close_col  = find_col(df_prev, "CLOSE")
+    option_col = find_col(df_prev, "OPTION")
+
+    if not all([expiry_col, strike_col, close_col, option_col]):
+        st.error("❌ Required columns missing in Previous Day file")
+        st.write(df_prev.columns)
+        st.stop()
+
+    # 🔥 STANDARD FORMAT
+    df_prev["EXPIRY"] = pd.to_datetime(df_prev[expiry_col], errors='coerce')
+    df_prev["STRIKE"] = pd.to_numeric(df_prev[strike_col], errors='coerce')
+    df_prev["CLOSE"]  = pd.to_numeric(df_prev[close_col], errors='coerce')
+    df_prev["OPTION"] = df_prev[option_col].astype(str).str.strip().str.upper()
+
+    # 🔥 FILTER EXPIRY
+    expiry_dt = pd.to_datetime(expiry)
+    df_prev = df_prev[df_prev["EXPIRY"] == expiry_dt]
+
+    
 
     # -------- MW FILE --------
     df_mw = pd.read_csv(mw_file)
@@ -90,7 +112,7 @@ if page == "📊 Strikes Sold":
     # -------- PROCESS --------
     results = []
 
-    strikes = df_prev["STRIKE"].unique()
+    strikes = sorted(df_prev["STRIKE"].unique())
 
     for strike in strikes:
 
