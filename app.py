@@ -55,7 +55,7 @@ if page == "📊 Strikes Sold":
     df_prev["EXPIRY"] = df_prev["EXPIRY"].astype(str).str.strip()
     df_prev = df_prev[df_prev["EXPIRY"] == expiry_str]
 
-    df_prev["Strike Price"] = df_prev["Strike Price"].astype(str).str.replace(",", "").astype(float)
+    df_prev["STRIKE"] = df_prev["STRIKE"].astype(str).str.replace(",", "").astype(float)
     df_prev["Close Price"] = pd.to_numeric(df_prev["Close Price"], errors="coerce")
     df_prev["Option Type"] = df_prev["Option Type"].str.strip().str.upper()
 
@@ -90,12 +90,12 @@ if page == "📊 Strikes Sold":
     # -------- PROCESS --------
     results = []
 
-    strikes = df_prev["Strike Price"].unique()
+    strikes = df_prev["STRIKE"].unique()
 
     for strike in strikes:
 
-        ce_row = df_prev[(df_prev["Option Type"] == "CE") & (df_prev["Strike Price"] == strike)]
-        pe_row = df_prev[(df_prev["Option Type"] == "PE") & (df_prev["Strike Price"] == strike)]
+        ce_row = df_prev[(df_prev["Option Type"] == "CE") & (df_prev["STRIKE"] == strike)]
+        pe_row = df_prev[(df_prev["Option Type"] == "PE") & (df_prev["STRIKE"] == strike)]
 
         if ce_row.empty or pe_row.empty:
             continue
@@ -348,8 +348,8 @@ elif page == "📈 Calculations":
                 rows.append([strike+step, f"{val:.2f}", strike-step, f"{val:.2f}"])
 
         # Close High Low
-        ce_row = df[(df["Option Type"]=="CE") & (df["Strike Price"]==strike)]
-        pe_row = df[(df["Option Type"]=="PE") & (df["Strike Price"]==strike)]
+        ce_row = df[(df["Option Type"]=="CE") & (df["STRIKE"]==strike)]
+        pe_row = df[(df["Option Type"]=="PE") & (df["STRIKE"]==strike)]
 
         if not ce_row.empty and not pe_row.empty:
             rows.append(["Close", f"{ce_row.iloc[0]['Close Price']:.2f}",
@@ -522,7 +522,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Average Only (ATM ± 10 Strikes)")
 
                 all_strikes = sorted(
-                    df[df["EXPIRY"] == expiry_str]["Strike Price"].unique()
+                    df[df["EXPIRY"] == expiry_str]["STRIKE"].unique()
                 )
 
                 if len(all_strikes) > 0:
@@ -692,7 +692,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Variations")
 
                 all_strikes = sorted(
-                    df[df["EXPIRY"] == expiry_str]["Strike Price"].unique()
+                    df[df["EXPIRY"] == expiry_str]["STRIKE"].unique()
                 )
 
                 if len(all_strikes) > 0:
@@ -759,13 +759,13 @@ elif page == "📈 Calculations":
                         ce_row = df[
                             (df["EXPIRY"] == expiry_str) &
                             (df["Option Type"] == "CE") &
-                            (df["Strike Price"] == s)
+                            (df["STRIKE"] == s)
                         ]
 
                         pe_row = df[
                             (df["EXPIRY"] == expiry_str) &
                             (df["Option Type"] == "PE") &
-                            (df["Strike Price"] == s)
+                            (df["STRIKE"] == s)
                         ]
 
                         ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty and pd.notnull(ce_row.iloc[0]["High Price"]) else None
