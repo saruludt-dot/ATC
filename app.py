@@ -263,7 +263,7 @@ elif page == "📈 Calculations":
         # =========================
         expiry_dt = pd.to_datetime(expiry)
 
-        df = df[df["EXPIRY"] == expiry_dt]
+        #df = df[df["EXPIRY"] == expiry_dt]
 
         # DEBUG
         st.write("Filtered Rows:", len(df))
@@ -757,13 +757,13 @@ elif page == "📈 Calculations":
                     for s in selected_strikes:
 
                         ce_row = df[
-                            (df["EXPIRY"] == expiry_str) &
+                            (df["EXPIRY"] == expiry_dt) &
                             (df["OPTION"] == "CE") &
                             (df["STRIKE"] == s)
                         ]
 
                         pe_row = df[
-                            (df["EXPIRY"] == expiry_str) &
+                            (df["EXPIRY"] == expiry_dt) &
                             (df["OPTION"] == "PE") &
                             (df["STRIKE"] == s)
                         ]
