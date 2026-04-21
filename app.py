@@ -57,7 +57,7 @@ if page == "📊 Strikes Sold":
 
     df_prev["STRIKE"] = df_prev["STRIKE"].astype(str).str.replace(",", "").astype(float)
     df_prev["CLOSE"] = pd.to_numeric(df_prev["CLOSE"], errors="coerce")
-    df_prev["OPTION "] = df_prev["OPTION "].str.strip().str.upper()
+    df_prev["OPTION"] = df_prev["OPTION"].str.strip().str.upper()
 
     # -------- MW FILE --------
     df_mw = pd.read_csv(mw_file)
@@ -81,7 +81,7 @@ if page == "📊 Strikes Sold":
     df_mw["LOW"] = pd.to_numeric(df_mw["LOW"], errors="coerce")
     df_mw["HIGH"] = pd.to_numeric(df_mw["HIGH"], errors="coerce")
 
-    df_mw["OPTION "] = df_mw["OPTION "].replace({
+    df_mw["OPTION"] = df_mw["OPTION"].replace({
         "Call": "CE", "Put": "PE", "CALL": "CE", "PUT": "PE"
     })
 
@@ -94,8 +94,8 @@ if page == "📊 Strikes Sold":
 
     for strike in strikes:
 
-        ce_row = df_prev[(df_prev["OPTION "] == "CE") & (df_prev["STRIKE"] == strike)]
-        pe_row = df_prev[(df_prev["OPTION "] == "PE") & (df_prev["STRIKE"] == strike)]
+        ce_row = df_prev[(df_prev["OPTION"] == "CE") & (df_prev["STRIKE"] == strike)]
+        pe_row = df_prev[(df_prev["OPTION"] == "PE") & (df_prev["STRIKE"] == strike)]
 
         if ce_row.empty or pe_row.empty:
             continue
@@ -109,7 +109,7 @@ if page == "📊 Strikes Sold":
         value = (ce_close + pe_close) / 2
 
         # ---- CE ----
-        ce = df_mw[(df_mw["OPTION "] == "CE") & (abs(df_mw["STRIKE"] - strike) < 1)]
+        ce = df_mw[(df_mw["OPTION"] == "CE") & (abs(df_mw["STRIKE"] - strike) < 1)]
 
         ce_low = ce_high = None
         ce_status = "❌ Not Sold"
@@ -121,7 +121,7 @@ if page == "📊 Strikes Sold":
                 ce_status = "✅ Sold"
 
         # ---- PE ----
-        pe = df_mw[(df_mw["OPTION "] == "PE") & (abs(df_mw["STRIKE"] - strike) < 1)]
+        pe = df_mw[(df_mw["OPTION"] == "PE") & (abs(df_mw["STRIKE"] - strike) < 1)]
 
         pe_low = pe_high = None
         pe_status = "❌ Not Sold"
@@ -348,8 +348,8 @@ elif page == "📈 Calculations":
                 rows.append([strike+step, f"{val:.2f}", strike-step, f"{val:.2f}"])
 
         # Close High Low
-        ce_row = df[(df["OPTION "]=="CE") & (df["STRIKE"]==strike)]
-        pe_row = df[(df["OPTION "]=="PE") & (df["STRIKE"]==strike)]
+        ce_row = df[(df["OPTION"]=="CE") & (df["STRIKE"]==strike)]
+        pe_row = df[(df["OPTION"]=="PE") & (df["STRIKE"]==strike)]
 
         if not ce_row.empty and not pe_row.empty:
             rows.append(["Close", f"{ce_row.iloc[0]['CLOSE']:.2f}",
@@ -758,13 +758,13 @@ elif page == "📈 Calculations":
 
                         ce_row = df[
                             (df["EXPIRY"] == expiry_str) &
-                            (df["OPTION "] == "CE") &
+                            (df["OPTION"] == "CE") &
                             (df["STRIKE"] == s)
                         ]
 
                         pe_row = df[
                             (df["EXPIRY"] == expiry_str) &
-                            (df["OPTION "] == "PE") &
+                            (df["OPTION"] == "PE") &
                             (df["STRIKE"] == s)
                         ]
 
