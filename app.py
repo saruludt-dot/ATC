@@ -213,66 +213,84 @@ elif page == "📈 Calculations":
         uploaded_file.seek(0)
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
-        # 🔥 CLEAN COLUMN NAMES (VERY IMPORTANT)
+        # =========================
+        # 🔥 STEP 1: CLEAN COLUMNS
+        # =========================
         df.columns = df.columns.str.strip().str.upper()
 
-        # 🔥 DEBUG (temporary - you can remove later)
-        st.write("Columns in file:", df.columns.tolist())
+        st.write("Detected Columns:", df.columns.tolist())  # debug
 
-        # 🔥 FLEXIBLE COLUMN DETECTION
-        expiry_col = next((c for c in df.columns if "EXPIRY" in c), None)
-        strike_col = next((c for c in df.columns if "STRIKE" in c), None)
-        close_col  = next((c for c in df.columns if "CLOSE" in c), None)
-        option_col = next((c for c in df.columns if "OPTION" in c), None)
-        high_col   = next((c for c in df.columns if "HIGH" in c), None)
-        low_col    = next((c for c in df.columns if "LOW" in c), None)
+        # =========================
+        # 🔥 STEP 2: FLEXIBLE COLUMN MAP
+        # =========================
+        def find_col(keyword):
+            for c in df.columns:
+                if keyword in c:
+                    return c
+            return None
 
-        # ❌ If any missing → show error clearly
-        if expiry_col is None or strike_col is None or close_col is None or option_col is None:
-            st.error("❌ Required columns not found in file")
+        expiry_col = find_col("EXPIRY")
+        strike_col = find_col("STRIKE")
+        close_col  = find_col("CLOSE")
+        option_col = find_col("OPTION")
+        high_col   = find_col("HIGH")
+        low_col    = find_col("LOW")
+
+        if not all([expiry_col, strike_col, close_col, option_col]):
+            st.error("❌ Required columns not found")
             st.stop()
 
-        # 🔥 RENAME dynamically
-        df.rename(columns={
-            expiry_col: "Expiry Date",
-            strike_col: "Strike Price",
-            close_col: "Close Price",
-            option_col: "Option Type",
-            high_col: "High Price" if high_col else None,
-            low_col: "Low Price" if low_col else None
-        }, inplace=True)
+        # =========================
+        # 🔥 STEP 3: CREATE STANDARD COLUMNS
+        # =========================
+        df["EXPIRY"] = pd.to_datetime(df[expiry_col], errors='coerce')
+        df["STRIKE"] = pd.to_numeric(df[strike_col], errors='coerce')
+        df["CLOSE"]  = pd.to_numeric(df[close_col], errors='coerce')
+        df["OPTION"] = df[option_col].astype(str).str.strip().str.upper()
 
-        # 🔥 REMOVE None keys (important)
-        df = df.rename(columns={k:v for k,v in df.rename(columns={}).items() if v is not None})
+        if high_col:
+            df["HIGH"] = pd.to_numeric(df[high_col], errors='coerce')
+        else:
+            df["HIGH"] = None
 
-        # 🔥 CONVERT TYPES
-        df["EXPIRY DATE"] = pd.to_datetime(df["EXPIRY DATE"], errors='coerce')
+        if low_col:
+            df["LOW"] = pd.to_numeric(df[low_col], errors='coerce')
+        else:
+            df["LOW"] = None
+
+        # =========================
+        # 🔥 STEP 4: FILTER EXPIRY
+        # =========================
         expiry_dt = pd.to_datetime(expiry)
 
-        expiry_dt = pd.to_datetime(expiry)
+        df = df[df["EXPIRY"] == expiry_dt]
 
-        df["EXPIRY DATE"] = pd.to_datetime(df["EXPIRY DATE"], errors='coerce')
+        # DEBUG
+        st.write("Filtered Rows:", len(df))
 
-        df = df[df["EXPIRY DATE"] == expiry_dt]
+        if df.empty:
+            st.error("❌ No data after expiry filter")
+            st.write("Available Expiries:", df["EXPIRY"].dropna().unique())
+            st.stop()
 
-        df["Option Type"] = df["Option Type"].astype(str).str.strip().str.upper()
-        df["Strike Price"] = pd.to_numeric(df["Strike Price"], errors="coerce")
-        df["Close Price"] = pd.to_numeric(df["Close Price"], errors="coerce")
-
-        if "High Price" in df.columns:
-            df["High Price"] = pd.to_numeric(df["High Price"], errors="coerce")
-
-        if "Low Price" in df.columns:
-            df["Low Price"] = pd.to_numeric(df["Low Price"], errors="coerce")
-
-        expiry_str = expiry.strftime("%d-%b-%Y")
-
-        def get_price(opt, s):
+        # =========================
+        # 🔥 STEP 5: HELPER FUNCTION
+        # =========================
+        def get_price(opt, strike):
             r = df[
-                (df["OPTION TYPE"] == opt) &
-                (df["STRIKE PRICE"] == s)
+                (df["OPTION"] == opt) &
+                (df["STRIKE"] == strike)
             ]
-            return r.iloc[0]["CLOSE PRICE"] if not r.empty else None
+            return r.iloc[0]["CLOSE"] if not r.empty else None
+
+        # =========================
+        # 🔥 STEP 6: STRIKE LIST
+        # =========================
+        strikes = sorted(df["STRIKE"].dropna().unique())
+
+        if len(strikes) == 0:
+            st.error("❌ No valid strike data found")
+            st.stop()
 
         # -------- ATM --------
         diff_list = []
