@@ -213,12 +213,27 @@ elif page == "📈 Calculations":
         uploaded_file.seek(0)
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
-        df.columns = df.columns.str.strip()
-        df["Expiry Date"] = df["Expiry Date"].astype(str).str.strip()
-        df["Option Type"] = df["Option Type"].str.strip().str.upper()
+        # 🔥 STANDARDIZE COLUMN NAMES
+        df.columns = df.columns.str.strip().str.upper()
 
-        df["Strike Price"] = df["Strike Price"].astype(str).str.replace(",", "").astype(float)
+        # 🔥 RENAME NSE FORMAT → YOUR FORMAT
+        df.rename(columns={
+            "EXPIRY_DT": "Expiry Date",
+            "STRIKE_PR": "Strike Price",
+            "CLOSE": "Close Price",
+            "OPTION_TYP": "Option Type",
+            "HIGH": "High Price",
+            "LOW": "Low Price"
+        }, inplace=True)
 
+        # 🔥 NORMALIZE DATA
+        df["Expiry Date"] = pd.to_datetime(df["Expiry Date"], errors='coerce')
+        expiry_dt = pd.to_datetime(expiry)
+
+        df = df[df["Expiry Date"] == expiry_dt]
+
+        df["Option Type"] = df["Option Type"].astype(str).str.strip().str.upper()
+        df["Strike Price"] = pd.to_numeric(df["Strike Price"], errors="coerce")
         df["Close Price"] = pd.to_numeric(df["Close Price"], errors="coerce")
         df["High Price"] = pd.to_numeric(df["High Price"], errors="coerce")
         df["Low Price"] = pd.to_numeric(df["Low Price"], errors="coerce")
@@ -226,7 +241,10 @@ elif page == "📈 Calculations":
         expiry_str = expiry.strftime("%d-%b-%Y")
 
         def get_price(opt, s):
-            r = df[(df["Expiry Date"]==expiry_str) & (df["Option Type"]==opt) & (df["Strike Price"]==s)]
+            r = df[
+                (df["Option Type"] == opt) &
+                (df["Strike Price"] == s)
+            ]
             return r.iloc[0]["Close Price"] if not r.empty else None
 
         # -------- ATM --------
@@ -236,7 +254,7 @@ elif page == "📈 Calculations":
         for s in strikes:
             ce = get_price("CE", s)
             pe = get_price("PE", s)
-            if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
+            if ce is not None and pe is not None and ce > 0 and pe > 0:
                 diff_list.append((s, ce, pe, abs(ce-pe)))
 
         if diff_list:
@@ -248,14 +266,14 @@ elif page == "📈 Calculations":
         # A
         ce = get_price("CE", strike)
         pe = get_price("PE", strike)
-        if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
+        if ce is not None and pe is not None and ce > 0 and pe > 0:
             val = (ce+pe)/2
             rows.append(["A", f"{val:.2f}", "A", f"{val:.2f}"])
 
         # B
         ce = get_price("CE", strike+100)
         pe = get_price("PE", strike-100)
-        if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
+        if ce is not None and pe is not None and ce > 0 and pe > 0:
             val = (ce+pe)/2
             rows.append(["B", f"{val:.2f}", "B", f"{val:.2f}"])
 
@@ -326,7 +344,8 @@ elif page == "📈 Calculations":
         strikes = sorted([s for s in strikes if pd.notnull(s)])
 
         if len(strikes) == 0:
-            st.error("No valid strike data found")
+            st.error("❌ No data after expiry filter — check file format or expiry selection")
+            st.write("Available Expiry Dates:", df["Expiry Date"].dropna().unique())
             st.stop()
 
         idx = min(
