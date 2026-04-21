@@ -218,7 +218,7 @@ elif page == "📈 Calculations":
         # =========================
         df.columns = df.columns.str.strip().str.upper()
 
-        st.write("Detected Columns:", df.columns.tolist())  # debug
+        #st.write("Detected Columns:", df.columns.tolist())  # debug
 
         # =========================
         # 🔥 STEP 2: FLEXIBLE COLUMN MAP
@@ -266,7 +266,7 @@ elif page == "📈 Calculations":
         #df = df[df["EXPIRY"] == expiry_dt]
 
         # DEBUG
-        st.write("Filtered Rows:", len(df))
+        #st.write("Filtered Rows:", len(df))
 
         if df.empty:
             st.error("❌ No data after expiry filter")
