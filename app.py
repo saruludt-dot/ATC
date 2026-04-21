@@ -678,10 +678,10 @@ elif page == "📈 Calculations":
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
+                        st.success(f"🟢 NIFTY {expiry.strftime('%d-%b-%Y')} CE {int(atm_strike - 100)}")
 
                     with col2:
-                        st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
+                        st.error(f"🔴 NIFTY {expiry.strftime('%d-%b-%Y')} PE {int(atm_strike + 100)}")
     
 
         # -------- VARIATIONS --------
