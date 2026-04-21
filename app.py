@@ -213,20 +213,39 @@ elif page == "📈 Calculations":
         uploaded_file.seek(0)
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
-        # 🔥 STANDARDIZE COLUMN NAMES
+        # 🔥 CLEAN COLUMN NAMES (VERY IMPORTANT)
         df.columns = df.columns.str.strip().str.upper()
 
-        # 🔥 RENAME NSE FORMAT → YOUR FORMAT
+        # 🔥 DEBUG (temporary - you can remove later)
+        st.write("Columns in file:", df.columns.tolist())
+
+        # 🔥 FLEXIBLE COLUMN DETECTION
+        expiry_col = next((c for c in df.columns if "EXPIRY" in c), None)
+        strike_col = next((c for c in df.columns if "STRIKE" in c), None)
+        close_col  = next((c for c in df.columns if "CLOSE" in c), None)
+        option_col = next((c for c in df.columns if "OPTION" in c), None)
+        high_col   = next((c for c in df.columns if "HIGH" in c), None)
+        low_col    = next((c for c in df.columns if "LOW" in c), None)
+
+        # ❌ If any missing → show error clearly
+        if expiry_col is None or strike_col is None or close_col is None or option_col is None:
+            st.error("❌ Required columns not found in file")
+            st.stop()
+
+        # 🔥 RENAME dynamically
         df.rename(columns={
-            "EXPIRY_DT": "Expiry Date",
-            "STRIKE_PR": "Strike Price",
-            "CLOSE": "Close Price",
-            "OPTION_TYP": "Option Type",
-            "HIGH": "High Price",
-            "LOW": "Low Price"
+            expiry_col: "Expiry Date",
+            strike_col: "Strike Price",
+            close_col: "Close Price",
+            option_col: "Option Type",
+            high_col: "High Price" if high_col else None,
+            low_col: "Low Price" if low_col else None
         }, inplace=True)
 
-        # 🔥 NORMALIZE DATA
+        # 🔥 REMOVE None keys (important)
+        df = df.rename(columns={k:v for k,v in df.rename(columns={}).items() if v is not None})
+
+        # 🔥 CONVERT TYPES
         df["Expiry Date"] = pd.to_datetime(df["Expiry Date"], errors='coerce')
         expiry_dt = pd.to_datetime(expiry)
 
@@ -235,8 +254,12 @@ elif page == "📈 Calculations":
         df["Option Type"] = df["Option Type"].astype(str).str.strip().str.upper()
         df["Strike Price"] = pd.to_numeric(df["Strike Price"], errors="coerce")
         df["Close Price"] = pd.to_numeric(df["Close Price"], errors="coerce")
-        df["High Price"] = pd.to_numeric(df["High Price"], errors="coerce")
-        df["Low Price"] = pd.to_numeric(df["Low Price"], errors="coerce")
+
+        if "High Price" in df.columns:
+            df["High Price"] = pd.to_numeric(df["High Price"], errors="coerce")
+
+        if "Low Price" in df.columns:
+            df["Low Price"] = pd.to_numeric(df["Low Price"], errors="coerce")
 
         expiry_str = expiry.strftime("%d-%b-%Y")
 
