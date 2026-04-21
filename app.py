@@ -522,7 +522,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Average Only (ATM ± 10 Strikes)")
 
                 all_strikes = sorted(
-                    df[df["EXPIRY"] == expiry_str]["STRIKE"].unique()
+                    df["STRIKE"].dropna().unique()
                 )
 
                 if len(all_strikes) > 0:
@@ -692,7 +692,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Variations")
 
                 all_strikes = sorted(
-                    df[df["EXPIRY"] == expiry_str]["STRIKE"].unique()
+                    df["STRIKE"].dropna().unique()
                 )
 
                 if len(all_strikes) > 0:
