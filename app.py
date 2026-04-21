@@ -246,10 +246,14 @@ elif page == "📈 Calculations":
         df = df.rename(columns={k:v for k,v in df.rename(columns={}).items() if v is not None})
 
         # 🔥 CONVERT TYPES
-        df["Expiry Date"] = pd.to_datetime(df["Expiry Date"], errors='coerce')
+        df["EXPIRY DATE"] = pd.to_datetime(df["EXPIRY DATE"], errors='coerce')
         expiry_dt = pd.to_datetime(expiry)
 
-        df = df[df["Expiry Date"] == expiry_dt]
+        expiry_dt = pd.to_datetime(expiry)
+
+        df["EXPIRY DATE"] = pd.to_datetime(df["EXPIRY DATE"], errors='coerce')
+
+        df = df[df["EXPIRY DATE"] == expiry_dt]
 
         df["Option Type"] = df["Option Type"].astype(str).str.strip().str.upper()
         df["Strike Price"] = pd.to_numeric(df["Strike Price"], errors="coerce")
@@ -265,10 +269,10 @@ elif page == "📈 Calculations":
 
         def get_price(opt, s):
             r = df[
-                (df["Option Type"] == opt) &
-                (df["Strike Price"] == s)
+                (df["OPTION TYPE"] == opt) &
+                (df["STRIKE PRICE"] == s)
             ]
-            return r.iloc[0]["Close Price"] if not r.empty else None
+            return r.iloc[0]["CLOSE PRICE"] if not r.empty else None
 
         # -------- ATM --------
         diff_list = []
