@@ -36,7 +36,7 @@ if page == "📊 Strikes Sold":
     st.markdown("<h1>📈 Strikes Sold Today</h1><hr>", unsafe_allow_html=True)
 
     # ✅ ADD THIS
-    expiry = st.date_input("📅 Select Expiry Date")
+    expiry = st.date_input("📅 Select EXPIRY")
     expiry_str = expiry.strftime("%d-%b-%Y")
 
     prev_file = st.file_uploader("Upload Previous Day File", type=["csv"])
@@ -52,8 +52,8 @@ if page == "📊 Strikes Sold":
     df_prev.columns = df_prev.columns.str.strip()
 
     # ✅ ADD THIS
-    df_prev["Expiry Date"] = df_prev["Expiry Date"].astype(str).str.strip()
-    df_prev = df_prev[df_prev["Expiry Date"] == expiry_str]
+    df_prev["EXPIRY"] = df_prev["EXPIRY"].astype(str).str.strip()
+    df_prev = df_prev[df_prev["EXPIRY"] == expiry_str]
 
     df_prev["Strike Price"] = df_prev["Strike Price"].astype(str).str.replace(",", "").astype(float)
     df_prev["Close Price"] = pd.to_numeric(df_prev["Close Price"], errors="coerce")
@@ -189,7 +189,7 @@ elif page == "📈 Calculations":
             uploaded_file = st.file_uploader("📥 Upload CSV")
 
         with col2:
-            expiry = st.date_input("📅 Expiry Date")
+            expiry = st.date_input("📅 EXPIRY")
 
         with col3:
             strike = st.number_input("🎯 Strike", step=50)
@@ -294,7 +294,7 @@ elif page == "📈 Calculations":
 
         # -------- ATM --------
         diff_list = []
-        strikes = df[df["Expiry Date"]==expiry_str]["Strike Price"].unique()
+        strikes = df[df["EXPIRY"]==expiry_str]["Strike Price"].unique()
 
         for s in strikes:
             ce = get_price("CE", s)
@@ -390,7 +390,7 @@ elif page == "📈 Calculations":
 
         if len(strikes) == 0:
             st.error("❌ No data after expiry filter — check file format or expiry selection")
-            st.write("Available Expiry Dates:", df["Expiry Date"].dropna().unique())
+            st.write("Available EXPIRYs:", df["EXPIRY"].dropna().unique())
             st.stop()
 
         idx = min(
@@ -522,7 +522,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Average Only (ATM ± 10 Strikes)")
 
                 all_strikes = sorted(
-                    df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
+                    df[df["EXPIRY"] == expiry_str]["Strike Price"].unique()
                 )
 
                 if len(all_strikes) > 0:
@@ -692,7 +692,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Variations")
 
                 all_strikes = sorted(
-                    df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
+                    df[df["EXPIRY"] == expiry_str]["Strike Price"].unique()
                 )
 
                 if len(all_strikes) > 0:
@@ -757,13 +757,13 @@ elif page == "📈 Calculations":
                     for s in selected_strikes:
 
                         ce_row = df[
-                            (df["Expiry Date"] == expiry_str) &
+                            (df["EXPIRY"] == expiry_str) &
                             (df["Option Type"] == "CE") &
                             (df["Strike Price"] == s)
                         ]
 
                         pe_row = df[
-                            (df["Expiry Date"] == expiry_str) &
+                            (df["EXPIRY"] == expiry_str) &
                             (df["Option Type"] == "PE") &
                             (df["Strike Price"] == s)
                         ]
