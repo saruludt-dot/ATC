@@ -476,9 +476,29 @@ elif page == "📈 Calculations":
                 st.markdown("### 🟢 CE")
 
                 components.html(f"""
-                <textarea id="cebox" style="width:100%;height:120px;">{ce_string}</textarea>
-                <br>
-                <button onclick="navigator.clipboard.writeText(document.getElementById('cebox').value)">
+                <textarea id="cebox" style="
+                width:100%;
+                height:70px;
+                font-size:13px;
+                padding:8px;
+                box-sizing:border-box;">
+                {ce_string}
+                </textarea>
+
+                <br><br>
+
+                <button style="
+                width:100%;
+                height:45px;
+                font-size:16px;
+                font-weight:bold;
+                background-color:#16a34a;
+                color:white;
+                border:none;
+                border-radius:6px;
+                cursor:pointer;
+                "
+                onclick="navigator.clipboard.writeText(document.getElementById('cebox').value)">
                 📋 Copy CE
                 </button>
                 """, height=150)
@@ -489,9 +509,29 @@ elif page == "📈 Calculations":
                 st.markdown("### 🔴 PE")
 
                 components.html(f"""
-                <textarea id="pebox" style="width:100%;height:120px;">{pe_string}</textarea>
-                <br>
-                <button onclick="navigator.clipboard.writeText(document.getElementById('pebox').value)">
+                <textarea id="pebox" style="
+                width:100%;
+                height:70px;
+                font-size:13px;
+                padding:8px;
+                box-sizing:border-box;">
+                {pe_string}
+                </textarea>
+
+                <br><br>
+
+                <button style="
+                width:100%;
+                height:45px;
+                font-size:16px;
+                font-weight:bold;
+                background-color:#dc2626;
+                color:white;
+                border:none;
+                border-radius:6px;
+                cursor:pointer;
+                "
+                onclick="navigator.clipboard.writeText(document.getElementById('pebox').value)">
                 📋 Copy PE
                 </button>
                 """, height=150)
