@@ -582,25 +582,90 @@ elif page == "📈 Calculations":
         # -------- TAB 2 --------
         with tab2:
 
+            st.subheader("📊 16 Rules")
+
             st.dataframe(table_df)
 
+            # =========================
+            # ✅ BUILD 16 RULES
+            # =========================
+            rules_16 = {}
+
+            def safe_float(x):
+                try:
+                    return float(x)
+                except:
+                    return None
+
+            # ---- Extract from table ----
+            for _, row in table_df.iterrows():
+
+                name = str(row["Name"]).strip()
+                ce_val = safe_float(row["CE"])
+
+                if name == "A":
+                    rules_16["A"] = ce_val
+
+                elif name == "B":
+                    rules_16["B"] = ce_val
+
+                elif name == "C3":
+                    rules_16["C3"] = ce_val
+
+                elif name == "C4":
+                    rules_16["C4"] = ce_val
+
+                elif name == "C5":
+                    rules_16["C5"] = ce_val
+
+                elif name == "Close":
+                    rules_16["YC"] = ce_val
+
+                elif name == "High":
+                    rules_16["YH"] = ce_val
+
+                elif name == "Low":
+                    rules_16["YL"] = ce_val
+
+            # ---- S/R from A (IMPORTANT FIX) ----
+            A_val = rules_16.get("A")
+
+            if A_val and strike:
+
+                rules_16["S1"] = strike - A_val
+                rules_16["S2"] = strike - (2 * A_val)
+
+                rules_16["R1"] = strike + A_val
+                rules_16["R2"] = strike + (2 * A_val)
+                rules_16["R3"] = strike + (3 * A_val)
+                rules_16["R4"] = strike + (4 * A_val)
+                rules_16["R5"] = strike + (5 * A_val)
+
+            # ---- CP (ATM Average) ----
+            if 'atm_ce' in locals() and 'atm_pe' in locals():
+                rules_16["CP"] = round((atm_ce + atm_pe) / 2, 2)
+
+            # =========================
+            # ✅ DISPLAY + EXPORT
+            # =========================
+
             st.divider()
-            st.subheader("📌 TradingView - 16 Rules (Auto Export)")
+            st.subheader("📌 TradingView - Auto Export")
 
-            if 'rules_16' in locals() and rules_16:
+            if rules_16:
 
-                # 🔥 ORDER FIX (VERY IMPORTANT)
+                # 🎯 ORDER (VERY IMPORTANT)
                 order = ["A","B","S1","S2","C3","C4","C5",
                          "R1","R2","R3","R4","R5",
                          "YC","YH","YL","CP"]
 
-                # 🎯 FORMAT
+                # 🎯 Build Pine Inputs
                 pine_inputs = "\n".join([
                     f"{k} = {round(rules_16.get(k, 0), 2)}"
                     for k in order
                 ])
 
-                # 🎯 FULL PINE SCRIPT AUTO BUILD
+                # 🎯 FULL PINE SCRIPT
                 pine_script = f"""
         //@version=5
         indicator("16 Rules Auto", overlay=true)
@@ -635,15 +700,16 @@ elif page == "📈 Calculations":
         plot_level(CP, "CP", color.green, line.style_dashed)
         """
 
-                # 📋 COPY BOX
-                st.text_area("📋 Copy Full Pine Script", pine_script, height=400)
+                # ✅ CLEAN DISPLAY
+                st.code(pine_script, language="pinescript")
 
-                # 🔘 COPY BUTTON
-                components.html(f"""
-                <button onclick="navigator.clipboard.writeText(`{pine_script}`)">
-                🚀 Copy Pine Script
-                </button>
-                """, height=50)
+                # ✅ DOWNLOAD OPTION
+                st.download_button(
+                    label="📥 Download Pine Script",
+                    data=pine_script,
+                    file_name="16_rules.pine",
+                    mime="text/plain"
+                )
 
             else:
                 st.warning("⚠️ Run calculation first")
