@@ -2,13 +2,14 @@ import streamlit as st
 import pandas as pd
 import base64
 import streamlit.components.v1 as components
+import streamlit as st
+import base64
 
-# ---------------- IMAGE ----------------
 def get_img(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-# ---------------- SIDEBAR ----------------
+# Sidebar menu
 logo = get_img("logo.png")
 
 st.sidebar.markdown(
@@ -16,188 +17,191 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
+#st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <style>
-section[data-testid="stSidebar"] > div { padding-top: -15px; }
-section[data-testid="stSidebar"] h3 { margin-top: 0px; margin-bottom: -20px; }
-div[data-testid="stRadio"] > div { gap: 5px; }
+/* Reduce top padding of sidebar */
+section[data-testid="stSidebar"] > div {
+    padding-top: -15px;
+}
+
+/* Reduce space above Navigation title */
+section[data-testid="stSidebar"] h3 {
+    margin-top: 0px;
+    margin-bottom: -20px;
+}
+
+/* Reduce radio spacing */
+div[data-testid="stRadio"] > div {
+    gap: 5px;
+}
 </style>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown("### 📌 Navigation")
 
-page = st.sidebar.radio("", ["📈 Calculations", "📊 Strikes Sold"])
-
-# =====================================================
-# ✅ STRIKES SOLD (NEW LOGIC - DIRECT)
-# =====================================================
+page = st.sidebar.radio(
+    "",
+    ["📊 Strikes Sold", "📈 Calculations"],
+)
 if page == "📊 Strikes Sold":
 
-    st.markdown("<h1>📈 Strikes Sold Today</h1><hr>", unsafe_allow_html=True)
+    #st.title("📊 Options Value Tracker")
 
-    # ✅ ADD THIS
-    expiry = st.date_input("📅 Select EXPIRY")
-    expiry_str = expiry.strftime("%d-%b-%Y")
+    import streamlit as st
+    import pandas as pd
 
-    prev_file = st.file_uploader("Upload Previous Day File", type=["csv"])
-    mw_file = st.file_uploader("Upload Today MW File", type=["csv"])
+    st.markdown("""
+    <div style='display:flex; align-items:center; gap:10px;'>
+        <h1 style='margin:0;'>📈 Strikes Sold Today</h1>
+    </div>
+    <hr style='margin-top:5px;'>
+""", unsafe_allow_html=True)
 
-    if prev_file is None or mw_file is None:
-        st.info("Please upload both files")
-        st.stop()
+    # Upload files
+    input_file = st.file_uploader("Upload Values Excel", type=["xlsx"])
+    mw_file = st.file_uploader("Upload MW File", type=["csv"])
 
-    # -------- PREVIOUS DAY --------
-    df_prev = pd.read_csv(prev_file, on_bad_lines='skip', engine='python')
+    if input_file and mw_file:
 
-    # 🔥 CLEAN COLUMN NAMES
-    df_prev.columns = df_prev.columns.str.strip().str.upper()
+        # =========================
+        # ✅ STEP 1: READ INPUT FILE
+        # =========================
+        df_input = pd.read_excel(input_file)
 
-    # 🔍 AUTO DETECT COLUMNS
-    def find_col(df, keyword):
-        for c in df.columns:
-            if keyword in c:
-                return c
-        return None
+        # Remove extra column (if exists)
+        df_input = df_input.loc[:, df_input.columns != 0]
 
-    expiry_col = find_col(df_prev, "EXPIRY")
-    strike_col = find_col(df_prev, "STRIKE")
-    close_col  = find_col(df_prev, "CLOSE")
-    option_col = find_col(df_prev, "OPTION")
+        # Clean column names
+        df_input.columns = df_input.columns.str.strip().str.lower()
 
-    if not all([expiry_col, strike_col, close_col, option_col]):
-        st.error("❌ Required columns missing in Previous Day file")
-        st.write(df_prev.columns)
-        st.stop()
+        # Convert strike
+        df_input["strike"] = df_input["strike"].astype(float)
 
-    # 🔥 STANDARD FORMAT
-    df_prev["EXPIRY"] = pd.to_datetime(df_prev[expiry_col], errors='coerce')
-    df_prev["STRIKE"] = pd.to_numeric(df_prev[strike_col], errors='coerce')
-    df_prev["CLOSE"]  = pd.to_numeric(df_prev[close_col], errors='coerce')
-    df_prev["OPTION"] = df_prev[option_col].astype(str).str.strip().str.upper()
+        #st.write("Input Columns:", df_input.columns)
 
-    # 🔥 FILTER EXPIRY
-    expiry_dt = pd.to_datetime(expiry)
-    df_prev = df_prev[df_prev["EXPIRY"] == expiry_dt]
+        # =========================
+        # ✅ STEP 2: READ MW FILE
+        # =========================
+        df_mw = pd.read_csv(mw_file)
 
-    
+        # Clean column names
+        df_mw.columns = df_mw.columns.str.strip().str.upper()
 
-    # -------- MW FILE --------
-    df_mw = pd.read_csv(mw_file)
-    df_mw.columns = df_mw.columns.str.strip().str.upper()
-    
-    # ✅ AUTO DETECT EXPIRY COLUMN
-    expiry_col = next((col for col in df_mw.columns if "EXPIRY" in col), None)
+        #st.write("MW Columns:", df_mw.columns)
 
-    if expiry_col is None:
-        st.error("❌ Expiry column not found")
-        st.stop()
+        # =========================
+        # ✅ STEP 3: CLEAN MW DATA
+        # =========================
 
-    # ✅ FILTER
-    df_mw[expiry_col] = pd.to_datetime(df_mw[expiry_col], errors="coerce")
-    selected_expiry = pd.to_datetime(expiry)
+        # Clean STRIKE
+        df_mw["STRIKE"] = (
+            df_mw["STRIKE"]
+            .astype(str)
+            .str.replace(",", "")
+            .astype(float)
+        )
 
-    df_mw = df_mw[df_mw[expiry_col] == selected_expiry]
+        # Clean LOW / HIGH
+        df_mw["LOW"] = pd.to_numeric(
+            df_mw["LOW"].astype(str).str.replace(",", ""),
+            errors="coerce"
+        )
 
-    # EXISTING CODE
-    df_mw["STRIKE"] = df_mw["STRIKE"].astype(str).str.replace(",", "").astype(float)
-    df_mw["LOW"] = pd.to_numeric(df_mw["LOW"], errors="coerce")
-    df_mw["HIGH"] = pd.to_numeric(df_mw["HIGH"], errors="coerce")
-
-    option_col = next((c for c in df_mw.columns if "OPTION" in c), None)
-
-    if option_col is None:
-        st.error("❌ Option column not found in MW file")
-        st.write(df_mw.columns)
-        st.stop()
-
-    df_mw["OPTION"] = df_mw[option_col].astype(str).str.upper().str.strip()
-
-    df_mw["OPTION"] = df_mw["OPTION"].replace({
-        "CALL": "CE",
-        "PUT": "PE"
-    })
-
-    df_mw = df_mw[df_mw["SYMBOL"] == "NIFTY"]
-
-    # -------- PROCESS --------
-    results = []
-
-    strikes = sorted(df_prev["STRIKE"].unique())
-
-    for strike in strikes:
-
-        ce_row = df_prev[(df_prev["OPTION"] == "CE") & (df_prev["STRIKE"] == strike)]
-        pe_row = df_prev[(df_prev["OPTION"] == "PE") & (df_prev["STRIKE"] == strike)]
-
-        if ce_row.empty or pe_row.empty:
-            continue
-
-        ce_close = ce_row.iloc[0]["CLOSE"]
-        pe_close = pe_row.iloc[0]["CLOSE"]
-
-        if pd.isnull(ce_close) or pd.isnull(pe_close):
-            continue
-
-        value = (ce_close + pe_close) / 2
-
-        # ---- CE ----
-        ce = df_mw[(df_mw["OPTION"] == "CE") & (abs(df_mw["STRIKE"] - strike) < 1)]
-
-        ce_low = ce_high = None
-        ce_status = "❌ Not Sold"
-
-        if not ce.empty:
-            ce_low = ce.iloc[0]["LOW"]
-            ce_high = ce.iloc[0]["HIGH"]
-            if ce_low <= value <= ce_high:
-                ce_status = "✅ Sold"
-
-        # ---- PE ----
-        pe = df_mw[(df_mw["OPTION"] == "PE") & (abs(df_mw["STRIKE"] - strike) < 1)]
-
-        pe_low = pe_high = None
-        pe_status = "❌ Not Sold"
-
-        if not pe.empty:
-            pe_low = pe.iloc[0]["LOW"]
-            pe_high = pe.iloc[0]["HIGH"]
-            if pe_low <= value <= pe_high:
-                pe_status = "✅ Sold"
-
-        # ---- S/R ----
-        S2 = S1 = R1 = R2 = None
-
-        if ce_status == "✅ Sold" and pe_status == "✅ Sold":
-            S2 = strike - (2 * value)
-            S1 = strike - value
-            R1 = strike + value
-            R2 = strike + (2 * value)
-
-        results.append({
-            "Strike": strike,
-            "Average": round(value, 2),
-            "CE Low": ce_low,
-            "CE High": ce_high,
-            "PE Low": pe_low,
-            "PE High": pe_high,
-            "CE Status": ce_status,
-            "PE Status": pe_status,
-            "S2": S2,
-            "S1": S1,
-            "R1": R1,
-            "R2": R2
+        df_mw["HIGH"] = pd.to_numeric(
+            df_mw["HIGH"].astype(str).str.replace(",", ""),
+            errors="coerce"
+        )
+        df_mw = df_mw.dropna(subset=["LOW", "HIGH"])
+        # Convert CALL/PUT → CE/PE
+        df_mw["OPTION TYPE"] = df_mw["OPTION TYPE"].astype(str).str.strip().replace({
+            "Call": "CE",
+            "Put": "PE",
+            "CALL": "CE",
+            "PUT": "PE"
         })
 
-    if len(results) == 0:
-        st.warning("No matching data found. Check files.")
-    else:
+        # Filter only NIFTY (important)
+        df_mw = df_mw[df_mw["SYMBOL"] == "NIFTY"]
+
+        # =========================
+        # ✅ STEP 4: PROCESS
+        # =========================
+        results = []
+
+        for _, row in df_input.iterrows():
+
+            strike = row["strike"]
+            value = row["value to check"]
+
+            # ---- CE ----
+            ce = df_mw[
+                (df_mw["OPTION TYPE"] == "CE") &
+                (abs(df_mw["STRIKE"] - strike) < 1)
+            ]
+
+            ce_low = ce_high = None
+            ce_status = "❌ Not Sold"
+
+            if not ce.empty:
+                ce_low = ce.iloc[0]["LOW"]
+                ce_high = ce.iloc[0]["HIGH"]
+
+                if ce_low <= value <= ce_high:
+                    ce_status = "✅ Sold"
+
+            # ---- PE ----
+            pe = df_mw[
+                (df_mw["OPTION TYPE"] == "PE") &
+                (abs(df_mw["STRIKE"] - strike) < 1)
+            ]
+
+            pe_low = pe_high = None
+            pe_status = "❌ Not Sold"
+
+            if not pe.empty:
+                pe_low = pe.iloc[0]["LOW"]
+                pe_high = pe.iloc[0]["HIGH"]
+
+                if pe_low <= value <= pe_high:
+                    pe_status = "✅ Sold"
+            # =========================
+            # ✅ S/R CALCULATION
+            # =========================
+            S2 = S1 = R1 = R2 = None
+
+            if ce_status == "✅ Sold" and pe_status == "✅ Sold":
+
+                S2 = strike - (2 * value)
+                S1 = strike - value
+                R1 = strike + value
+                R2 = strike + (2 * value)
+                
+            results.append({
+                "Strike": strike,
+                "Average": value,
+
+                "CE Low": ce_low,
+                "CE High": ce_high,
+                "PE Low": pe_low,
+                "PE High": pe_high,
+
+                "CE Status": ce_status,
+                "PE Status": pe_status,
+
+                "S2": S2,
+                "S1": S1,
+                "R1": R1,
+                "R2": R2
+            })
+
+        # =========================
+        # ✅ STEP 5: DISPLAY
+        # =========================
         result_df = pd.DataFrame(results)
-        result_df = result_df.sort_values(by="Strike").reset_index(drop=True)
+
         st.dataframe(result_df, use_container_width=True)
 
-# =====================================================
-# ✅ CALCULATIONS (OLD SAFE VERSION)
-# =====================================================
 elif page == "📈 Calculations":
 
     st.markdown("""
@@ -207,10 +211,49 @@ elif page == "📈 Calculations":
         <hr style='margin-top:5px;'>
     """, unsafe_allow_html=True)
 
+    # -------- LOGIN --------
+    #def check_login():
+        #if "logged_in" not in st.session_state:
+            #st.session_state.logged_in = False
+
+        #if not st.session_state.logged_in:
+            #st.title("🔐 Login Required")
+
+            #u = st.text_input("Username")
+           # p = st.text_input("Password", type="password")
+
+           # if st.button("Login"):
+               # if u == "ATC" and p == "2015":
+                    #st.session_state.logged_in = True
+                    #st.rerun()
+                #else:
+                    #st.error("Invalid login")
+
+           # return False
+       # return True
+
+   # if not check_login():
+       # st.stop()
+
+    # -------- LOGO LEFT --------
+    #def get_img(path):
+        #with open(path, "rb") as f:
+            #return base64.b64encode(f.read()).decode()
+
+    #col_logo, col_tabs, col_logout = st.columns([2.5,6.25,1.25])
+
+   # with col_logout:
+        #if st.button("Logout"):
+            #st.session_state.logged_in = False
+           # st.rerun()
+
+   # with col_logo:
+       # logo = get_img("logo.png")
+        #st.markdown(f"<img src='data:image/png;base64,{logo}' width='300%'>", unsafe_allow_html=True)
+
     # -------- TABS --------
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "📥 Input", "📊 16 Rules", "📊 Average Only",
-        "🔄 See-Saw", "📊 Variations", "⚡ Gap Adjust"
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "📥 Input", "📊 16 Rules", "📊 Average Only", "🔄 See-Saw", "📊 Variations"
     ])
 
     # -------- INPUT --------
@@ -221,117 +264,41 @@ elif page == "📈 Calculations":
             uploaded_file = st.file_uploader("📥 Upload CSV")
 
         with col2:
-            expiry = st.date_input("📅 EXPIRY")
+            expiry = st.date_input("📅 Expiry Date")
 
         with col3:
             strike = st.number_input("🎯 Strike", step=50)
         calculate = st.button("🚀 Calculate", use_container_width=True)
 
-        if calculate:
-            st.session_state["calculated"] = True
-            st.session_state["file"] = uploaded_file
-            st.session_state["expiry"] = expiry
-            st.session_state["strike"] = strike
-        if calculate:
-            st.session_state["calculated"] = True
-
-    uploaded_file = st.session_state.get("file")
-    expiry = st.session_state.get("expiry")
-    strike = st.session_state.get("strike")
-
     # -------- MAIN LOGIC --------
-    if uploaded_file and st.session_state.get("calculated"):
+    if uploaded_file and calculate:
 
-        uploaded_file.seek(0)
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
-        # =========================
-        # 🔥 STEP 1: CLEAN COLUMNS
-        # =========================
-        df.columns = df.columns.str.strip().str.upper()
+        df.columns = df.columns.str.strip()
+        df["Expiry Date"] = df["Expiry Date"].astype(str).str.strip()
+        df["Option Type"] = df["Option Type"].str.strip().str.upper()
 
-        #st.write("Detected Columns:", df.columns.tolist())  # debug
+        df["Strike Price"] = df["Strike Price"].astype(str).str.replace(",", "").astype(float)
 
-        # =========================
-        # 🔥 STEP 2: FLEXIBLE COLUMN MAP
-        # =========================
-        def find_col(keyword):
-            for c in df.columns:
-                if keyword in c:
-                    return c
-            return None
+        df["Close Price"] = pd.to_numeric(df["Close Price"], errors="coerce")
+        df["High Price"] = pd.to_numeric(df["High Price"], errors="coerce")
+        df["Low Price"] = pd.to_numeric(df["Low Price"], errors="coerce")
 
-        expiry_col = find_col("EXPIRY")
-        strike_col = find_col("STRIKE")
-        close_col  = find_col("CLOSE")
-        option_col = find_col("OPTION")
-        high_col   = find_col("HIGH")
-        low_col    = find_col("LOW")
+        expiry_str = expiry.strftime("%d-%b-%Y")
 
-        if not all([expiry_col, strike_col, close_col, option_col]):
-            st.error("❌ Required columns not found")
-            st.stop()
-
-        # =========================
-        # 🔥 STEP 3: CREATE STANDARD COLUMNS
-        # =========================
-        df["EXPIRY"] = pd.to_datetime(df[expiry_col], errors='coerce')
-        df["STRIKE"] = pd.to_numeric(df[strike_col], errors='coerce')
-        df["CLOSE"]  = pd.to_numeric(df[close_col], errors='coerce')
-        df["OPTION"] = df[option_col].astype(str).str.strip().str.upper()
-
-        if high_col:
-            df["HIGH"] = pd.to_numeric(df[high_col], errors='coerce')
-        else:
-            df["HIGH"] = None
-
-        if low_col:
-            df["LOW"] = pd.to_numeric(df[low_col], errors='coerce')
-        else:
-            df["LOW"] = None
-
-        # =========================
-        # 🔥 STEP 4: FILTER EXPIRY
-        # =========================
-        expiry_dt = pd.to_datetime(expiry)
-
-        #df = df[df["EXPIRY"] == expiry_dt]
-
-        # DEBUG
-        #st.write("Filtered Rows:", len(df))
-
-        if df.empty:
-            st.error("❌ No data after expiry filter")
-            st.write("Available Expiries:", df["EXPIRY"].dropna().unique())
-            st.stop()
-
-        # =========================
-        # 🔥 STEP 5: HELPER FUNCTION
-        # =========================
-        def get_price(opt, strike):
-            r = df[
-                (df["OPTION"] == opt) &
-                (df["STRIKE"] == strike)
-            ]
-            return r.iloc[0]["CLOSE"] if not r.empty else None
-
-        # =========================
-        # 🔥 STEP 6: STRIKE LIST
-        # =========================
-        strikes = sorted(df["STRIKE"].dropna().unique())
-
-        if len(strikes) == 0:
-            st.error("❌ No valid strike data found")
-            st.stop()
+        def get_price(opt, s):
+            r = df[(df["Expiry Date"]==expiry_str) & (df["Option Type"]==opt) & (df["Strike Price"]==s)]
+            return r.iloc[0]["Close Price"] if not r.empty else None
 
         # -------- ATM --------
         diff_list = []
-        strikes = sorted(df["STRIKE"].dropna().unique())
+        strikes = df[df["Expiry Date"]==expiry_str]["Strike Price"].unique()
 
         for s in strikes:
             ce = get_price("CE", s)
             pe = get_price("PE", s)
-            if ce is not None and pe is not None and ce > 0 and pe > 0:
+            if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
                 diff_list.append((s, ce, pe, abs(ce-pe)))
 
         if diff_list:
@@ -343,14 +310,14 @@ elif page == "📈 Calculations":
         # A
         ce = get_price("CE", strike)
         pe = get_price("PE", strike)
-        if ce is not None and pe is not None and ce > 0 and pe > 0:
+        if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
             val = (ce+pe)/2
             rows.append(["A", f"{val:.2f}", "A", f"{val:.2f}"])
 
         # B
         ce = get_price("CE", strike+100)
         pe = get_price("PE", strike-100)
-        if ce is not None and pe is not None and ce > 0 and pe > 0:
+        if ce and pe and 10 < ce < 1000 and 10 < pe < 1000:
             val = (ce+pe)/2
             rows.append(["B", f"{val:.2f}", "B", f"{val:.2f}"])
 
@@ -380,16 +347,16 @@ elif page == "📈 Calculations":
                 rows.append([strike+step, f"{val:.2f}", strike-step, f"{val:.2f}"])
 
         # Close High Low
-        ce_row = df[(df["OPTION"]=="CE") & (df["STRIKE"]==strike)]
-        pe_row = df[(df["OPTION"]=="PE") & (df["STRIKE"]==strike)]
+        ce_row = df[(df["Option Type"]=="CE") & (df["Strike Price"]==strike)]
+        pe_row = df[(df["Option Type"]=="PE") & (df["Strike Price"]==strike)]
 
         if not ce_row.empty and not pe_row.empty:
-            rows.append(["Close", f"{ce_row.iloc[0]['CLOSE']:.2f}",
-                         "Close", f"{pe_row.iloc[0]['CLOSE']:.2f}"])
-            rows.append(["High", f"{ce_row.iloc[0]['HIGH']:.2f}",
-                         "High", f"{pe_row.iloc[0]['HIGH']:.2f}"])
-            rows.append(["Low", f"{ce_row.iloc[0]['LOW']:.2f}",
-                         "Low", f"{pe_row.iloc[0]['LOW']:.2f}"])
+            rows.append(["Close", f"{ce_row.iloc[0]['Close Price']:.2f}",
+                         "Close", f"{pe_row.iloc[0]['Close Price']:.2f}"])
+            rows.append(["High", f"{ce_row.iloc[0]['High Price']:.2f}",
+                         "High", f"{pe_row.iloc[0]['High Price']:.2f}"])
+            rows.append(["Low", f"{ce_row.iloc[0]['Low Price']:.2f}",
+                         "Low", f"{pe_row.iloc[0]['Low Price']:.2f}"])
         if ce_close and pe_close:
             rows.append([
                 f"{int(strike)} PE Close", f"{pe_close:.2f}",
@@ -400,6 +367,7 @@ elif page == "📈 Calculations":
 
         # -------- SEE-SAW (HTML VERSION) --------
 
+        # ✅ LABEL FUNCTIONS (MOVE HERE)
         def get_left_label(s):
             if s == int(atm_strike):
                 return "2nd Point: "
@@ -421,8 +389,7 @@ elif page == "📈 Calculations":
         strikes = sorted([s for s in strikes if pd.notnull(s)])
 
         if len(strikes) == 0:
-            st.error("❌ No data after expiry filter — check file format or expiry selection")
-            st.write("Available EXPIRYs:", df["EXPIRY"].dropna().unique())
+            st.error("No valid strike data found")
             st.stop()
 
         idx = min(
@@ -554,7 +521,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Average Only (ATM ± 10 Strikes)")
 
                 all_strikes = sorted(
-                    df["STRIKE"].dropna().unique()
+                    df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
                 )
 
                 if len(all_strikes) > 0:
@@ -657,8 +624,6 @@ elif page == "📈 Calculations":
                 # -------- STRING FORMAT --------
                 call_string = "[" + ",".join(call_list) + "]"
                 put_string = "[" + ",".join(put_list) + "]"
-                st.session_state["call_data"] = call_string
-                st.session_state["put_data"] = put_string
 
                 # -------- COPY UI --------
                 col1, col2 = st.columns(2)
@@ -710,10 +675,10 @@ elif page == "📈 Calculations":
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        st.success(f"🟢 NIFTY {expiry.strftime('%d-%b-%Y')} CE {int(atm_strike - 100)}")
+                        st.success(f"🟢 NIFTY {expiry_str} CE {int(atm_strike - 100)}")
 
                     with col2:
-                        st.error(f"🔴 NIFTY {expiry.strftime('%d-%b-%Y')} PE {int(atm_strike + 100)}")
+                        st.error(f"🔴 NIFTY {expiry_str} PE {int(atm_strike + 100)}")
     
 
         # -------- VARIATIONS --------
@@ -724,7 +689,7 @@ elif page == "📈 Calculations":
                 st.subheader("📊 Variations")
 
                 all_strikes = sorted(
-                    df["STRIKE"].dropna().unique()
+                    df[df["Expiry Date"] == expiry_str]["Strike Price"].unique()
                 )
 
                 if len(all_strikes) > 0:
@@ -789,26 +754,33 @@ elif page == "📈 Calculations":
                     for s in selected_strikes:
 
                         ce_row = df[
-                            (df["EXPIRY"] == expiry_dt) &
-                            (df["OPTION"] == "CE") &
-                            (df["STRIKE"] == s)
+                            (df["Expiry Date"] == expiry_str) &
+                            (df["Option Type"] == "CE") &
+                            (df["Strike Price"] == s)
                         ]
 
                         pe_row = df[
-                            (df["EXPIRY"] == expiry_dt) &
-                            (df["OPTION"] == "PE") &
-                            (df["STRIKE"] == s)
+                            (df["Expiry Date"] == expiry_str) &
+                            (df["Option Type"] == "PE") &
+                            (df["Strike Price"] == s)
                         ]
 
-                        ce_high = ce_row.iloc[0]["HIGH"] if not ce_row.empty and pd.notnull(ce_row.iloc[0]["HIGH"]) else None
-                        ce_low  = ce_row.iloc[0]["LOW"] if not ce_row.empty and pd.notnull(ce_row.iloc[0]["LOW"]) else None
+                        ce_high = ce_row.iloc[0]["High Price"] if not ce_row.empty and pd.notnull(ce_row.iloc[0]["High Price"]) else None
+                        ce_low  = ce_row.iloc[0]["Low Price"] if not ce_row.empty and pd.notnull(ce_row.iloc[0]["Low Price"]) else None
 
-                        pe_high = pe_row.iloc[0]["HIGH"] if not pe_row.empty and pd.notnull(pe_row.iloc[0]["HIGH"]) else None
-                        pe_low  = pe_row.iloc[0]["LOW"] if not pe_row.empty and pd.notnull(pe_row.iloc[0]["LOW"]) else None
+                        pe_high = pe_row.iloc[0]["High Price"] if not pe_row.empty and pd.notnull(pe_row.iloc[0]["High Price"]) else None
+                        pe_low  = pe_row.iloc[0]["Low Price"] if not pe_row.empty and pd.notnull(pe_row.iloc[0]["Low Price"]) else None
 
                         # ---------------- CE LOGIC ----------------
                         ce_bg = ""
                         ce_text = "white"
+
+                    #if s == int(atm_strike):
+                        #ce_bg = "#fff3cd"; ce_text = "black"
+                    #elif s == int(atm_strike + 100):
+                        #ce_bg = "#d4edda"; ce_text = "black"
+                    #elif s == int(atm_strike - 100):
+                        #ce_bg = "#f8d7da"; ce_text = "black"
 
                         # CE DESCENDING CHECK
                         if prev_ce_high is not None and ce_high is not None:
@@ -835,7 +807,14 @@ elif page == "📈 Calculations":
                         # ---------------- PE LOGIC ----------------
                         pe_bg = ""
                         pe_text = "white"
-                   
+
+                    #if s == int(atm_strike):
+                        #pe_bg = "#fff3cd"; pe_text = "black"
+                    #elif s == int(atm_strike + 100):
+                        #pe_bg = "#d4edda"; pe_text = "black"
+                    #elif s == int(atm_strike - 100):
+                        #pe_bg = "#f8d7da"; pe_text = "black"
+
                         # PE ASCENDING CHECK
                         if prev_pe_high is not None and pe_high is not None:
                             if pe_high < prev_pe_high:
@@ -870,53 +849,5 @@ elif page == "📈 Calculations":
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
 
-        # -------- GAP ADJUST --------
-        with tab6:
-
-            st.subheader("⚡ Gap Adjustment")
-
-            call_input = st.session_state.get("call_data")
-            put_input = st.session_state.get("put_data")
-
-            if not call_input:
-                st.warning("⚠️ Run See-Saw first")
-                st.stop()
-
-            points = st.number_input("Points", value=100, step=50)
-
-            gap_type = st.radio("Market", ["Gap Up", "Gap Down"])
-
-            def adjust(data, change):
-                data = data.replace("[", "").replace("]", "")
-                items = data.split(",")
-
-                result = []
-                for i in range(0, len(items), 2):
-                    try:
-                        strike = float(items[i])
-                        price = items[i+1]
-                        result.extend([int(strike + change), price])
-                    except:
-                        continue
-
-                return "[" + ",".join(map(str, result)) + "]"
-
-            if st.button("🚀 Adjust"):
-
-                if gap_type == "Gap Up":
-                    new_call = adjust(call_input, +points)
-                    new_put = adjust(put_input, +points)
-                else:
-                    new_call = adjust(call_input, -points)
-                    new_put = adjust(put_input, -points)
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    st.markdown("### 🟢 CALL")
-                    st.code(new_call)
-
-                with col2:
-                    st.markdown("### 🔴 PUT")
-                    st.code(new_put)
+    
 
