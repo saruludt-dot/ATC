@@ -436,6 +436,66 @@ elif page == "📈 Calculations":
         with tab2:
             st.dataframe(table_df)
 
+            # ================================
+            # 🔥 BUILD CE / PE STRING (16 RULES)
+            # ================================
+
+            ce_pairs = []
+            pe_pairs = []
+
+            for _, row in table_df.iterrows():
+
+                name_ce = str(row["Name"]).strip()
+                val_ce = row["CE"]
+
+                name_pe = str(row["Name "]).strip()
+                val_pe = row["PE"]
+
+                # Skip empty
+                if pd.notnull(val_ce):
+                    ce_pairs.append(f"{name_ce}:{val_ce}")
+
+                if pd.notnull(val_pe):
+                    pe_pairs.append(f"{name_pe}:{val_pe}")
+
+            # Final strings
+            ce_string = ",".join(ce_pairs)
+            pe_string = ",".join(pe_pairs)
+
+
+            # ================================
+            # 📌 TRADINGVIEW EXPORT UI
+            # ================================
+
+            st.subheader("📌 TradingView Export (16 Rules)")
+
+            col1, col2 = st.columns(2)
+
+            # 🟢 CE
+            with col1:
+                st.markdown("### 🟢 CE")
+
+                components.html(f"""
+                <textarea id="cebox" style="width:100%;height:120px;">{ce_string}</textarea>
+                <br>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('cebox').value)">
+                📋 Copy CE
+                </button>
+                """, height=150)
+
+
+            # 🔴 PE
+            with col2:
+                st.markdown("### 🔴 PE")
+
+                components.html(f"""
+                <textarea id="pebox" style="width:100%;height:120px;">{pe_string}</textarea>
+                <br>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('pebox').value)">
+                📋 Copy PE
+                </button>
+                """, height=150)
+
         # -------- TAB 5 : AVERAGE ONLY --------
         with tab3:
 
