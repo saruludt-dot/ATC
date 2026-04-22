@@ -365,6 +365,76 @@ elif page == "📈 Calculations":
 
         table_df = pd.DataFrame(rows, columns=["Name","CE","Name ","PE"])
 
+        # =========================
+        # ✅ BUILD 16 RULES (MASTER)
+        # =========================
+
+        rules_16 = {}
+
+        def safe_float(x):
+            try:
+                return float(x)
+            except:
+                return None
+
+        # Convert table_df into dictionary
+        for _, row in table_df.iterrows():
+
+            name = str(row["Name"]).strip()
+            ce_val = safe_float(row["CE"])
+
+            if name == "A":
+                rules_16["A"] = ce_val
+
+            elif name == "B":
+                rules_16["B"] = ce_val
+
+            elif name == "C3":
+                rules_16["C3"] = ce_val
+
+            elif name == "C4":
+                rules_16["C4"] = ce_val
+
+            elif name == "C5":
+                rules_16["C5"] = ce_val
+
+
+        # ===== S / R (VERY IMPORTANT FIX) =====
+        # Use A as base (correct logic)
+
+        A_val = rules_16.get("A")
+
+        if A_val and strike:
+
+            rules_16["S1"] = strike - A_val
+            rules_16["S2"] = strike - (2 * A_val)
+
+            rules_16["R1"] = strike + A_val
+            rules_16["R2"] = strike + (2 * A_val)
+            rules_16["R3"] = strike + (3 * A_val)
+            rules_16["R4"] = strike + (4 * A_val)
+            rules_16["R5"] = strike + (5 * A_val)
+
+
+        # ===== YC / YH / YL =====
+        for _, row in table_df.iterrows():
+
+            name = str(row["Name"]).strip()
+
+            if name == "Close":
+                rules_16["YC"] = safe_float(row["CE"])
+
+            elif name == "High":
+                rules_16["YH"] = safe_float(row["CE"])
+
+            elif name == "Low":
+                rules_16["YL"] = safe_float(row["CE"])
+
+
+        # ===== CP (ATM AVG) =====
+        if 'atm_ce' in locals() and 'atm_pe' in locals():
+            rules_16["CP"] = round((atm_ce + atm_pe) / 2, 2)
+
         # -------- SEE-SAW (HTML VERSION) --------
 
         # ✅ LABEL FUNCTIONS (MOVE HERE)
@@ -515,32 +585,68 @@ elif page == "📈 Calculations":
             st.dataframe(table_df)
 
             st.divider()
+            st.subheader("📌 TradingView - 16 Rules (Auto Export)")
 
-            st.subheader("📌 TradingView - 16 Rules Input")
+            if 'rules_16' in locals() and rules_16:
 
-            # 🔥 Extract values from table_df
-            rules = {}
+                # 🔥 ORDER FIX (VERY IMPORTANT)
+                order = ["A","B","S1","S2","C3","C4","C5",
+                         "R1","R2","R3","R4","R5",
+                         "YC","YH","YL","CP"]
 
-            for _, row in table_df.iterrows():
-                name = str(row["Name"]).strip()
-                value = row["CE"]
+                # 🎯 FORMAT
+                pine_inputs = "\n".join([
+                    f"{k} = {round(rules_16.get(k, 0), 2)}"
+                    for k in order
+                ])
 
-                try:
-                    value = float(value)
-                except:
-                    continue
+                # 🎯 FULL PINE SCRIPT AUTO BUILD
+                pine_script = f"""
+        //@version=5
+        indicator("16 Rules Auto", overlay=true)
 
-                if name in ["A","B","C3","C4","C5"]:
-                    rules[name] = value
+        {pine_inputs}
 
-            # 🔥 Add remaining manually if needed (safe fallback)
-            # (You can improve mapping later)
+        // ===== FUNCTION =====
+        plot_level(val, title, col, style_line) =>
+            line.new(bar_index[1], val, bar_index, val, extend=extend.right, color=col, style=style_line, width=2)
+            label.new(bar_index, val, text=title + ": " + str.tostring(val), style=label.style_label_left, textcolor=color.white, color=col)
 
-            # 🎯 Build Pine Input String
-            pine_inputs = "\n".join([f"{k} = {v}" for k,v in rules.items()])
+        // ===== PLOTS =====
+        plot_level(A, "A", color.yellow, line.style_solid)
+        plot_level(B, "B", color.green, line.style_solid)
 
-            # 📋 COPY BOX
-            st.text_area("Copy to Pine Script", pine_inputs, height=200)
+        plot_level(S1, "S1", color.green, line.style_dotted)
+        plot_level(S2, "S2", color.green, line.style_solid)
+
+        plot_level(C3, "C3", color.blue, line.style_dotted)
+        plot_level(C4, "C4", color.blue, line.style_dotted)
+        plot_level(C5, "C5", color.blue, line.style_dotted)
+
+        plot_level(R1, "R1", color.red, line.style_dotted)
+        plot_level(R2, "R2", color.red, line.style_solid)
+        plot_level(R3, "R3", color.red, line.style_dotted)
+        plot_level(R4, "R4", color.red, line.style_solid)
+        plot_level(R5, "R5", color.red, line.style_dotted)
+
+        plot_level(YC, "YC", color.black, line.style_solid)
+        plot_level(YH, "YH", color.red, line.style_dashed)
+        plot_level(YL, "YL", color.purple, line.style_dashed)
+        plot_level(CP, "CP", color.green, line.style_dashed)
+        """
+
+                # 📋 COPY BOX
+                st.text_area("📋 Copy Full Pine Script", pine_script, height=400)
+
+                # 🔘 COPY BUTTON
+                components.html(f"""
+                <button onclick="navigator.clipboard.writeText(`{pine_script}`)">
+                🚀 Copy Pine Script
+                </button>
+                """, height=50)
+
+            else:
+                st.warning("⚠️ Run calculation first")
 
         # -------- TAB 5 : AVERAGE ONLY --------
         with tab3:
