@@ -511,7 +511,36 @@ elif page == "📈 Calculations":
 
         # -------- TAB 2 --------
         with tab2:
+
             st.dataframe(table_df)
+
+            st.divider()
+
+            st.subheader("📌 TradingView - 16 Rules Input")
+
+            # 🔥 Extract values from table_df
+            rules = {}
+
+            for _, row in table_df.iterrows():
+                name = str(row["Name"]).strip()
+                value = row["CE"]
+
+                try:
+                    value = float(value)
+                except:
+                    continue
+
+                if name in ["A","B","C3","C4","C5"]:
+                    rules[name] = value
+
+            # 🔥 Add remaining manually if needed (safe fallback)
+            # (You can improve mapping later)
+
+            # 🎯 Build Pine Input String
+            pine_inputs = "\n".join([f"{k} = {v}" for k,v in rules.items()])
+
+            # 📋 COPY BOX
+            st.text_area("Copy to Pine Script", pine_inputs, height=200)
 
         # -------- TAB 5 : AVERAGE ONLY --------
         with tab3:
