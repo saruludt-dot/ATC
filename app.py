@@ -411,7 +411,7 @@ elif page == "📈 Calculations":
 
                     row = asc_slice.iloc[i]
 
-                    left_strike = int(row["Call Strike"])
+                    left_strike = int(row["Call Strike"] - 50)
                     left_call = row["Call"]
 
                     right_strike = int(row["Put Strike"])
