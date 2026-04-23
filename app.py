@@ -416,12 +416,14 @@ elif page == "📈 Calculations":
                     bg_color = "#111827"
                     text_color = "white"
 
-                    if (left_strike == int(atm_strike) or right_strike == int(atm_strike)):
-                        bg_color = "#fff3cd"; text_color = "black"
-                    elif (left_strike == int(atm_strike + 100) or right_strike == int(atm_strike + 100)):
-                        bg_color = "#d4edda"; text_color = "black"
-                    elif (left_strike == int(atm_strike - 100) or right_strike == int(atm_strike - 100)):
-                        bg_color = "#f8d7da"; text_color = "black"
+                    # ✅ Highlight ONLY when label exists
+                    if "Point" in left_label or "Point" in right_label:
+                        if "2nd Point" in left_label or "2nd Point" in right_label:
+                            bg_color = "#fff3cd"; text_color = "black"
+                        elif "3rd Point" in left_label or "3rd Point" in right_label:
+                            bg_color = "#d4edda"; text_color = "black"
+                        elif "1st Point" in left_label or "1st Point" in right_label:
+                            bg_color = "#f8d7da"; text_color = "black"
 
                     html += f"""
         <tr style="background-color:{bg_color}; color:{text_color}; font-weight:bold;">
