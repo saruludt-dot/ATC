@@ -406,7 +406,7 @@ elif page == "📈 Calculations":
 
                     # LEFT SIDE (CALL)
                     left_row = asc_slice.iloc[len(asc_slice) - 1 - i]
-                    left_strike = int(left_row["Strike"])
+                    left_strike = int(left_row["Strike"] - 50)
                     left_call = left_row["Put"]
 
                     left_label = get_left_label(left_strike)
