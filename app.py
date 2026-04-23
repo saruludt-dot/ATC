@@ -324,23 +324,14 @@ elif page == "📈 Calculations":
         end = min(len(strikes), idx + 21)
 
         for s in strikes[start:end]:
+            pe = get_price("PE", s + 100)
+            ce = get_price("CE", s - 100)
 
-            # ✅ get price from SAME strike
-            ce = get_price("CE", s)
-            pe = get_price("PE", s)
+            if pe is not None and ce is not None:
+                mapping.append([int(s), ce, pe])
 
-            if ce is not None and pe is not None:
+        mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
 
-                # ✅ shift only DISPLAY strike
-                left_strike = int(s - 100)
-                right_strike = int(s + 100)
-
-                # ✅ PE goes LEFT, CE goes RIGHT
-                mapping.append([left_strike, pe, right_strike, ce])
-        mapping_df = pd.DataFrame(
-            mapping,
-            columns=["Call Strike", "Call", "Put Strike", "Put"]
-        )
         # -------- BUILD HTML TABLE --------
 
         html = """
@@ -388,12 +379,12 @@ elif page == "📈 Calculations":
         # ✅ SAFE GUARD (VERY IMPORTANT)
         if 'atm_strike' in locals() and 'mapping_df' in locals() and not mapping_df.empty:
 
-            asc_df = mapping_df.sort_values(by="Call Strike").reset_index(drop=True)
+            asc_df = mapping_df.sort_values(by="Strike").reset_index(drop=True)
 
             # Find ATM index safely
             atm_index = None
             for i, r in enumerate(asc_df.to_dict("records")):
-                if int(r["Call Strike"] + 100) == int(atm_strike):
+                if int(r["Strike"]) == int(atm_strike):
                     atm_index = i
                     break
 
@@ -409,16 +400,18 @@ elif page == "📈 Calculations":
 
                 for i in range(len(asc_slice)):
 
-                    row = asc_slice.iloc[i]
+                    # RIGHT SIDE (PUT)
+                    right_strike = int(asc_slice.iloc[i]["Strike"])
+                    right_put = asc_slice.iloc[i]["Call"]
 
-                    left_strike = int(row["Call Strike"] - 50)
-                    left_call = row["Call"]
-
-                    right_strike = int(row["Put Strike"])
-                    right_put = row["Put"]
+                    # LEFT SIDE (CALL)
+                    left_row = asc_slice.iloc[len(asc_slice) - 1 - i]
+                    left_strike = int(left_row["Strike"])
+                    left_call = left_row["Put"]
 
                     left_label = get_left_label(left_strike)
                     right_label = get_right_label(right_strike)
+
                     # COLOR LOGIC (keep your existing)
                     bg_color = "#111827"
                     text_color = "white"
