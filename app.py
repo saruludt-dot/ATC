@@ -404,18 +404,18 @@ elif page == "📈 Calculations":
 
                 for i in range(len(asc_slice)):
 
-                   row = asc_slice.iloc[i]
+                    row = asc_slice.iloc[i]
 
-                   # LEFT SIDE (CALL)
-                   left_strike = int(row["Strike"])
-                   left_call = row["Call"]
+                    # LEFT SIDE (CALL)
+                    left_strike = int(row["Strike"])
+                    left_call = row["Call"]
 
-                   # RIGHT SIDE (PUT)
-                   right_strike = int(row["Strike"])
-                   right_put = row["Put"]
+                    # RIGHT SIDE (PUT)
+                    right_strike = int(row["Strike"])
+                    right_put = row["Put"]
 
-                   left_label = get_left_label(left_strike)
-                   right_label = get_right_label(right_strike)
+                    left_label = get_left_label(left_strike)
+                    right_label = get_right_label(right_strike)
                     # COLOR LOGIC (keep your existing)
                     bg_color = "#111827"
                     text_color = "white"
