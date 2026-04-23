@@ -474,6 +474,7 @@ elif page == "📈 Calculations":
             # 🟢 CE
             with col1:
                 st.markdown("### 🟢 CE")
+
                 components.html(f"""
                 <textarea id="cebox" style="
                 width:100%;
@@ -497,29 +498,16 @@ elif page == "📈 Calculations":
                 border-radius:6px;
                 cursor:pointer;
                 "
-                onclick="
-                navigator.clipboard.writeText(document.getElementById('cebox').value);
-                document.getElementById('ce_msg').style.display='block';
-                setTimeout(()=>document.getElementById('ce_msg').style.display='none',1500);
-                ">
+                onclick="navigator.clipboard.writeText(document.getElementById('cebox').value)">
                 📋 Copy CE
                 </button>
-
-                <div id="ce_msg" style="
-                display:none;
-                color:#16a34a;
-                font-weight:bold;
-                margin-top:8px;
-                text-align:center;">
-                Copied ✅
-                </div>
-                """, height=180)
-                
+                """, height=150)
 
 
             # 🔴 PE
             with col2:
                 st.markdown("### 🔴 PE")
+
                 components.html(f"""
                 <textarea id="pebox" style="
                 width:100%;
@@ -543,24 +531,10 @@ elif page == "📈 Calculations":
                 border-radius:6px;
                 cursor:pointer;
                 "
-                onclick="
-                navigator.clipboard.writeText(document.getElementById('pebox').value);
-                document.getElementById('pe_msg').style.display='block';
-                setTimeout(()=>document.getElementById('pe_msg').style.display='none',1500);
-                ">
+                onclick="navigator.clipboard.writeText(document.getElementById('pebox').value)">
                 📋 Copy PE
                 </button>
-
-                <div id="pe_msg" style="
-                display:none;
-                color:#dc2626;
-                font-weight:bold;
-                margin-top:8px;
-                text-align:center;">
-                Copied ✅
-                </div>
-                """, height=180)
-                
+                """, height=150)
 
         # -------- TAB 5 : AVERAGE ONLY --------
         with tab3:
