@@ -325,17 +325,22 @@ elif page == "📈 Calculations":
 
         for s in strikes[start:end]:
 
-            ce_strike = s - 100
-            pe_strike = s + 100
-
-            ce = get_price("CE", ce_strike)
-            pe = get_price("PE", pe_strike)
+            # ✅ get price from SAME strike
+            ce = get_price("CE", s)
+            pe = get_price("PE", s)
 
             if ce is not None and pe is not None:
-                mapping.append([int(s), ce, pe])
 
-        mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
+                # ✅ shift only DISPLAY strike
+                left_strike = int(s - 100)
+                right_strike = int(s + 100)
 
+                # ✅ PE goes LEFT, CE goes RIGHT
+                mapping.append([left_strike, pe, right_strike, ce])
+        mapping_df = pd.DataFrame(
+            mapping,
+            columns=["Call Strike", "Call", "Put Strike", "Put"]
+        )
         # -------- BUILD HTML TABLE --------
 
         html = """
@@ -383,7 +388,7 @@ elif page == "📈 Calculations":
         # ✅ SAFE GUARD (VERY IMPORTANT)
         if 'atm_strike' in locals() and 'mapping_df' in locals() and not mapping_df.empty:
 
-            asc_df = mapping_df.sort_values(by="Strike").reset_index(drop=True)
+            asc_df = mapping_df.sort_values(by="Call Strike").reset_index(drop=True)
 
             # Find ATM index safely
             atm_index = None
@@ -406,12 +411,10 @@ elif page == "📈 Calculations":
 
                     row = asc_slice.iloc[i]
 
-                    # LEFT SIDE (CALL)
-                    left_strike = int(row["Strike"])
+                    left_strike = int(row["Call Strike"])
                     left_call = row["Call"]
 
-                    # RIGHT SIDE (PUT)
-                    right_strike = int(row["Strike"])
+                    right_strike = int(row["Put Strike"])
                     right_put = row["Put"]
 
                     left_label = get_left_label(left_strike)
