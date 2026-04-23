@@ -324,10 +324,14 @@ elif page == "📈 Calculations":
         end = min(len(strikes), idx + 21)
 
         for s in strikes[start:end]:
-            pe = get_price("PE", s + 100)
-            ce = get_price("CE", s - 100)
 
-            if pe is not None and ce is not None:
+            ce_strike = s - 100
+            pe_strike = s + 100
+
+            ce = get_price("CE", ce_strike)
+            pe = get_price("PE", pe_strike)
+
+            if ce is not None and pe is not None:
                 mapping.append([int(s), ce, pe])
 
         mapping_df = pd.DataFrame(mapping, columns=["Strike", "Call", "Put"])
@@ -400,18 +404,18 @@ elif page == "📈 Calculations":
 
                 for i in range(len(asc_slice)):
 
-                    # RIGHT SIDE (PUT)
-                    right_strike = int(asc_slice.iloc[i]["Strike"])
-                    right_put = asc_slice.iloc[i]["Call"]
+                   row = asc_slice.iloc[i]
 
-                    # LEFT SIDE (CALL)
-                    left_row = asc_slice.iloc[len(asc_slice) - 1 - i]
-                    left_strike = int(left_row["Strike"])
-                    left_call = left_row["Put"]
+                   # LEFT SIDE (CALL)
+                   left_strike = int(row["Strike"])
+                   left_call = row["Call"]
 
-                    left_label = get_left_label(left_strike)
-                    right_label = get_right_label(right_strike)
+                   # RIGHT SIDE (PUT)
+                   right_strike = int(row["Strike"])
+                   right_put = row["Put"]
 
+                   left_label = get_left_label(left_strike)
+                   right_label = get_right_label(right_strike)
                     # COLOR LOGIC (keep your existing)
                     bg_color = "#111827"
                     text_color = "white"
