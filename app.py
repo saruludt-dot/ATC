@@ -393,7 +393,7 @@ elif page == "📈 Calculations":
             # Find ATM index safely
             atm_index = None
             for i, r in enumerate(asc_df.to_dict("records")):
-                if int(r["Strike"]) == int(atm_strike):
+                if int(r["Call Strike"] + 100) == int(atm_strike):
                     atm_index = i
                     break
 
