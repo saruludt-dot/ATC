@@ -197,7 +197,9 @@ elif page == "📈 Calculations":
         with col3:
             strike = st.number_input("🎯 Strike", step=50)
             
-        if st.button("🚀 Calculate", use_container_width=True):
+        calculate = st.button("🚀 Calculate", use_container_width=True)
+
+        if calculate:
             st.session_state.show_success = True
 
         # ✅ MOVE HERE (ONLY INPUT TAB)
