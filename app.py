@@ -197,7 +197,38 @@ elif page == "📈 Calculations":
     # -------- MAIN LOGIC --------
     if uploaded_file and calculate:
 
-        st.success("✅ Calculated!")
+        components.html("""
+        <style>
+        .success-banner {
+            position: fixed;
+            top: 20px;
+            right: -400px;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            color: white;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
+            z-index: 9999;
+            animation: slideIn 0.6s ease forwards, fadeOut 0.6s ease 2.5s forwards;
+        }
+
+        @keyframes slideIn {
+            from { right: -400px; opacity: 0; }
+            to { right: 20px; opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; right: -400px; }
+        }
+        </style>
+
+        <div class="success-banner">
+            ✅ Calculated Successfully!
+        </div>
+        """, height=0)
         
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
