@@ -3,6 +3,9 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 
+if "show_success" not in st.session_state:
+    st.session_state.show_success = False
+
 
 # ---------------- IMAGE ----------------
 def get_img(path):
