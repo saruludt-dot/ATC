@@ -3,12 +3,6 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 
-if "show_banner" not in st.session_state:
-    st.session_state.show_banner = False
-
-if "calc_done" not in st.session_state:
-    st.session_state.calc_done = False
-
 # ---------------- IMAGE ----------------
 def get_img(path):
     with open(path, "rb") as f:
@@ -198,73 +192,12 @@ elif page == "📈 Calculations":
 
         with col3:
             strike = st.number_input("🎯 Strike", step=50)
-            
-        if st.button("🚀 Calculate", use_container_width=True):
-            st.session_state.show_banner = True
-            st.session_state.calc_done = False
-            calculate = True
-        else:
-            calculate = False
-
-    if st.session_state.show_banner:
-
-        if not st.session_state.calc_done:
-            # 🟡 WAIT STATE
-            components.html("""
-            <div style="
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: linear-gradient(90deg, #f59e0b, #fbbf24);
-                color: black;
-                padding: 15px 25px;
-                font-size: 16px;
-                font-weight: 600;
-                border-radius: 10px;
-                box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
-                z-index: 9999;
-                font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
-            ">
-                ⏳ Wait!
-            </div>
-            """, height=120)
-
-        else:
-            # 🟢 SUCCESS STATE
-            components.html("""
-            <div style="
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: linear-gradient(90deg, #16a34a, #22c55e);
-                color: white;
-                padding: 15px 25px;
-                font-size: 16px;
-                font-weight: 600;
-                border-radius: 10px;
-                box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
-                z-index: 9999;
-                font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
-            ">
-                ✅ Calculated Successfully!
-            </div>
-            """, height=120)
+        calculate = st.button("🚀 Calculate", use_container_width=True)
 
     # -------- MAIN LOGIC --------
     if uploaded_file and calculate:
 
-        components.html("""
-        <script>
-        setTimeout(() => {
-            const banner = document.getElementById("banner");
-            if (banner) {
-                banner.innerHTML = "✅ Calculated Successfully!";
-                banner.style.background = "linear-gradient(90deg, #16a34a, #22c55e)";
-                banner.style.color = "white";
-            }
-        }, 500);
-        </script>
-        """, height=0)
+        st.success("✅ Calculated!")
         
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
@@ -926,5 +859,3 @@ elif page == "📈 Calculations":
 
                     with col2:
                         components.html(pe_html, height=500, scrolling=True)
-
-                    st.session_state.calc_done = True
