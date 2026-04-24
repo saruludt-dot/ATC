@@ -206,12 +206,14 @@ elif page == "📈 Calculations":
             color: white;
             padding: 15px 25px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             border-radius: 10px;
             box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
             z-index: 9999;
             transform: translateX(400px);
             transition: transform 0.5s ease, opacity 0.5s ease;
+
+            font-family: 'Segoe UI', 'Inter', 'Roboto', sans-serif;   /* 👈 ADD THIS */
         ">
             ✅ Calculated Successfully!
         </div>
@@ -219,12 +221,10 @@ elif page == "📈 Calculations":
         <script>
         const banner = document.getElementById("banner");
 
-        // Slide in
         setTimeout(() => {
             banner.style.transform = "translateX(0)";
         }, 100);
 
-        // Slide out after 3 sec
         setTimeout(() => {
             banner.style.transform = "translateX(400px)";
             banner.style.opacity = "0";
