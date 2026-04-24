@@ -3,12 +3,6 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 
-import time
-
-if st.session_state.show_success:
-    st.success("✅ Calculated")
-    time.sleep(2)
-    st.session_state.show_success = False
 
 # ---------------- IMAGE ----------------
 def get_img(path):
