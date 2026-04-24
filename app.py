@@ -198,11 +198,10 @@ elif page == "📈 Calculations":
     if uploaded_file and calculate:
 
         components.html("""
-        <style>
-        .success-banner {
+        <div id="banner" style="
             position: fixed;
             top: 20px;
-            right: -400px;
+            right: 20px;
             background: linear-gradient(90deg, #16a34a, #22c55e);
             color: white;
             padding: 15px 25px;
@@ -211,24 +210,27 @@ elif page == "📈 Calculations":
             border-radius: 10px;
             box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
             z-index: 9999;
-            animation: slideIn 0.6s ease forwards, fadeOut 0.6s ease 2.5s forwards;
-        }
-
-        @keyframes slideIn {
-            from { right: -400px; opacity: 0; }
-            to { right: 20px; opacity: 1; }
-        }
-
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; right: -400px; }
-        }
-        </style>
-
-        <div class="success-banner">
+            transform: translateX(400px);
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        ">
             ✅ Calculated Successfully!
         </div>
-        """, height=0)
+
+        <script>
+        const banner = document.getElementById("banner");
+
+        // Slide in
+        setTimeout(() => {
+            banner.style.transform = "translateX(0)";
+        }, 100);
+
+        // Slide out after 3 sec
+        setTimeout(() => {
+            banner.style.transform = "translateX(400px)";
+            banner.style.opacity = "0";
+        }, 3000);
+        </script>
+        """, height=120)
         
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
