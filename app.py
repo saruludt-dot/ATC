@@ -202,8 +202,8 @@ elif page == "📈 Calculations":
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(90deg, #16a34a, #22c55e);
-            color: white;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            color: black;
             padding: 15px 25px;
             font-size: 16px;
             font-weight: 600;
@@ -212,19 +212,27 @@ elif page == "📈 Calculations":
             z-index: 9999;
             transform: translateX(400px);
             transition: transform 0.5s ease, opacity 0.5s ease;
-
-            font-family: 'Segoe UI', 'Inter', 'Roboto', sans-serif;   /* 👈 ADD THIS */
+            font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
         ">
-            ✅ Calculated Successfully!
+            ⏳ Wait!
         </div>
 
         <script>
         const banner = document.getElementById("banner");
 
+        // Slide in
         setTimeout(() => {
             banner.style.transform = "translateX(0)";
         }, 100);
 
+        // Change text + color after 1.2 sec
+        setTimeout(() => {
+            banner.innerHTML = "✅ Calculated Successfully!";
+            banner.style.background = "linear-gradient(90deg, #16a34a, #22c55e)";
+            banner.style.color = "white";
+        }, 1200);
+
+        // Slide out after 3 sec
         setTimeout(() => {
             banner.style.transform = "translateX(400px)";
             banner.style.opacity = "0";
