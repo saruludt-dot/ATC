@@ -197,7 +197,7 @@ elif page == "📈 Calculations":
     # -------- MAIN LOGIC --------
     if uploaded_file and calculate:
 
-        st.toast("Calculated!")
+        st.success("✅ Calculated!")
         
         df = pd.read_csv(uploaded_file, on_bad_lines='skip', engine='python')
 
