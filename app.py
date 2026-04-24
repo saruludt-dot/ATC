@@ -203,24 +203,24 @@ elif page == "📈 Calculations":
             calculate = False
 
     if st.session_state.show_banner:
-    components.html("""
-    <div id="banner" style="
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        color: black;
-        padding: 15px 25px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: 10px;
-        box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
-        z-index: 9999;
-        font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
-    ">
-        ⏳ Wait!
-    </div>
-    """, height=120)
+        components.html("""
+        <div id="banner" style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            color: black;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.4);
+            z-index: 9999;
+            font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+        ">
+            ⏳ Wait!
+        </div>
+        """, height=120)
 
     # -------- MAIN LOGIC --------
     if uploaded_file and calculate:
